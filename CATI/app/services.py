@@ -1,3 +1,5 @@
+# services.py
+
 import os
 import numpy as np
 import pandas as pd
@@ -8,6 +10,7 @@ from tensorflow.keras.layers import LSTM, Dense, Dropout
 from tensorflow.keras.callbacks import EarlyStopping
 from xgboost import XGBRegressor
 from django.conf import settings
+
 
 # --- 1. CONFIGURATION ---
 FEATURES = ['Open', 'High', 'Low', 'Close', 'Volume', 'RSI', 'MACD',
