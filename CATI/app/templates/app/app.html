@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Stock Prediction Backtest</title>
+    <style>
+      body {
+        font-family: sans-serif;
+        margin: 20px;
+      }
+      .graph-container {
+        margin-bottom: 40px;
+        border: 1px solid #ddd;
+        padding: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Backtest Analysis Results</h1>
+
+    <h2>Performance Graph</h2>
+    {% if chart_image %}
+    <img
+      src="{{ chart_image }}"
+      alt="Backtest Graph"
+      style="width: 100%; height: auto; border: 1px solid #ddd"
+    />
+    {% else %}
+    <p>No graph available.</p>
+    {% endif %} {% if forecast_chart %}
+    <h3>Future 30-Day Forecast</h3>
+    <img
+      src="{{ forecast_chart }}"
+      alt="Forecast Graph"
+      style="width: 100%; max-width: 800px"
+    />
+    {% else %}
+    <p>No forecast data available.</p>
+    {% endif %}
+    <h1>Train AI Model</h1>
+
+    {% if messages %}
+    <ul>
+      {% for message in messages %}
+      <li
+        style="color: {% if message.tags == 'error' %}red{% else %}green{% endif %};"
+      >
+        {{ message }}
+      </li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+
+    <p>
+      Click the button below to start training the model. This may take a few
+      seconds.
+    </p>
+
+    <form method="post">
+      {% csrf_token %}
+      <button
+        type="submit"
+        style="padding: 10px 20px; font-size: 16px; cursor: pointer"
+      >
+        Start Training
+      </button>
+    </form>
+
+    <br />
+    <a href="/">Go Back Home</a>
+  </body>
+</html>
