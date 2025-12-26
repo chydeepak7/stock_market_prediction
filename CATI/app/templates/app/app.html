@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>CHCL Stock Price Prediction</title>
+    <title>{{ stock_symbol }} Stock Price Prediction</title>
     <style>
       body {
         font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -117,8 +117,10 @@
     </div>
 
     <div class="container">
-      <h1>CHCL Stock Price Prediction</h1>
-
+      <h1>{{ stock_symbol }} Stock Price Prediction</h1>
+      <a href="{% url 'welcome' %}" style="color: #3498db; text-decoration: none; font-weight: bold;">
+  ← Back to Stock Selection
+</a>
       <!-- Messages -->
       {% if messages %}
       <ul class="messages">

@@ -71,7 +71,7 @@ def create_sequences(data, seq_length=60):
         y.append(data[i, 3]) # Index 3 is Close price
     return np.array(X), np.array(y)
 
-def run_prediction_pipeline():
+def run_prediction_pipeline(stock_symbol='CHCL'):
     """
     Main function to be called from Django View.
     Runs the entire training and prediction process.
@@ -79,9 +79,9 @@ def run_prediction_pipeline():
     print("--- Starting Prediction Pipeline ---")
     
     # 1. Load Data
-    file_path = os.path.join(settings.BASE_DIR, 'saved_states', 'CHCL.xlsx')
+    file_path = os.path.join(settings.BASE_DIR, 'saved_states', f'{stock_symbol}.xlsx')
     if not os.path.exists(file_path):
-        return {"status": "error", "message": f"File not found at {file_path}"}
+        return {"status": "error", "message": f"File {stock_symbol}.xlsx not found at {file_path}"}
         
     df = pd.read_excel(file_path)
     df = df.iloc[::-1].reset_index(drop=True)
@@ -154,7 +154,7 @@ def run_prediction_pipeline():
     })
     print("running")
     
-    backtest_path = os.path.join(settings.BASE_DIR, 'backtest_results.xlsx')
+    backtest_path = os.path.join(settings.BASE_DIR, 'saved_states', f'{stock_symbol}_backtest_results.xlsx')
     backtest_df.to_excel(backtest_path, index=False, sheet_name='Backtest_Results')
 
     # 6. Future Forecasting (Next 30 Days)
@@ -195,8 +195,8 @@ def run_prediction_pipeline():
         'Predicted_Close_Price': unscaled_forecast
     })
     
-    forecast_path = os.path.join(settings.BASE_DIR, 'future_30_day_forecast.xlsx')
+    forecast_path = os.path.join(settings.BASE_DIR, 'saved_states', f'{stock_symbol}_future_30_day_forecast.xlsx')
     forecast_results_df.to_excel(forecast_path, index=False, sheet_name='Forecast')
 
-    print("Pipeline Complete. Files Saved.")
+    print(f"Pipeline Complete for {stock_symbol}. Files Saved.")
     return {"status": "success", "backtest_file": backtest_path, "forecast_file": forecast_path}

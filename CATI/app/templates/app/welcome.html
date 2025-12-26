@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Stock Prediction Dashboard</title>
+    <style>
+      body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        margin: 0;
+        padding: 0;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .welcome-container {
+        background: rgba(255, 255, 255, 0.95);
+        color: #333;
+        border-radius: 16px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        padding: 50px 60px;
+        text-align: center;
+        max-width: 600px;
+        width: 90%;
+      }
+
+      h1 {
+        font-size: 3rem;
+        margin-bottom: 20px;
+        color: #2c3e50;
+      }
+
+      p {
+        font-size: 1.2rem;
+        margin-bottom: 40px;
+        color: #555;
+      }
+
+      .form-group {
+        margin-bottom: 30px;
+      }
+
+      label {
+        font-size: 1.3rem;
+        margin-bottom: 10px;
+        display: block;
+        color: #444;
+      }
+
+      select {
+        width: 100%;
+        padding: 14px;
+        font-size: 1.2rem;
+        border: 2px solid #3498db;
+        border-radius: 8px;
+        background: #f9f9f9;
+        cursor: pointer;
+      }
+
+      button {
+        padding: 16px 40px;
+        font-size: 1.3rem;
+        background-color: #3498db;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+      }
+
+      button:hover {
+        background-color: #2980b9;
+        transform: translateY(-2px);
+      }
+
+      .footer {
+        margin-top: 40px;
+        font-size: 0.9rem;
+        color: #777;
+      }
+
+      @media (max-width: 768px) {
+        h1 { font-size: 2.4rem; }
+        button { width: 100%; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="welcome-container">
+      <h1>Comparative Analysis Of Technical Indicators</h1>
+      <p>Select a stock to view its backtest results and 30-day price forecast.</p>
+
+      <form method="post">
+        {% csrf_token %}
+        <div class="form-group">
+          <label for="stock">Choose a Stock:</label>
+          <select name="stock" id="stock">
+            {% for value, label in stocks %}
+              <option value="{{ value }}" {% if value == selected_stock %}selected{% endif %}>
+                {{ label }}
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <button type="submit">View in Detail</button>
+      </form>
+
+      <div class="footer">
+        Powered by AI | Hybrid LSTM + XGBoost Model
+      </div>
+    </div>
+  </body>
+</html>

@@ -102,14 +102,16 @@ from .services import run_prediction_pipeline # Import the function we just made
 #     return render(request, 'app/app.html', context)
 
 def home_view(request):
+    stock = request.GET.get('stock', 'CHCL')
     context = {
         'chart_image': None,
         'forecast_chart': None,
+        'stock_symbol': stock,
     }
 
     # Correct paths inside saved_states folder
-    backtest_path = os.path.join(settings.BASE_DIR, 'saved_states', 'backtest_results.xlsx')
-    forecast_path = os.path.join(settings.BASE_DIR, 'saved_states', 'future_30_day_forecast.xlsx')
+    backtest_path = os.path.join(settings.BASE_DIR, 'saved_states', f'{stock}_backtest_results.xlsx')
+    forecast_path = os.path.join(settings.BASE_DIR, 'saved_states', f'{stock}_future_30_day_forecast.xlsx')
 
     # Load Backtest Chart
     if os.path.exists(backtest_path):
@@ -134,22 +136,45 @@ def home_view(request):
     # Handle Model Training (only on valid POST)
     if request.method == "POST" and request.POST.get('train_model'):
         try:
-            messages.info(request, "Training started... This may take 30–90 seconds.")
-            result = run_prediction_pipeline()
+            messages.info(request, f"Training started for {stock}... This may take 30–90 seconds.")
+            result = run_prediction_pipeline(stock_symbol=stock)
 
             if result['status'] == 'success':
-                messages.success(request, "Model trained successfully! Charts updated below.")
+                messages.success(request,f"{stock} Model trained successfully! Charts updated below.")
             else:
                 messages.error(request, result.get('message', 'Training failed.'))
         except Exception as e:
-            messages.error(request, f"Training error: {str(e)}")
+            messages.error(request, f"Training error for {stock}: {str(e)}")
 
         # Prevent re-submission and infinite loop
-        return redirect('home')
+        return redirect(f'/predict/?stock={stock}')
 
     return render(request, 'app/app.html', context)
 
+def welcome_view(request):
+    """
+    Welcome page with stock selection dropdown.
+    """
+    stocks = [
+        ('CHCL', 'Chilime Hydropower (CHCL)'),
+        ('NABIL', 'Nabil Bank (NABIL)'),
+        ('NTC', 'Nepal Telecom (NTC)'),
+        ('UPPER', 'Upper Tamakoshi (UPPER)'),
+        # Add more stocks here as needed
+    ]
 
+    context = {
+        'stocks': stocks,
+        'selected_stock': request.GET.get('stock', 'CHCL'),  # Default to CHCL
+    }
+
+    if request.method == "POST":
+        selected_stock = request.POST.get('stock')
+        if selected_stock:
+            # Redirect to the prediction page with stock as query param
+            return redirect(f'/predict/?stock={selected_stock}')
+
+    return render(request, 'app/welcome.html', context)
 
 def generate_chart_image(df, chart_type='backtest'):
     """
