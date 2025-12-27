@@ -79,7 +79,7 @@ def run_prediction_pipeline(stock_symbol='CHCL'):
     print("--- Starting Prediction Pipeline ---")
     
     # 1. Load Data
-    file_path = os.path.join(settings.BASE_DIR, 'saved_states', f'{stock_symbol}.xlsx')
+    file_path = os.path.join(settings.BASE_DIR, 'saved_states/data', f'{stock_symbol}.xlsx')
     if not os.path.exists(file_path):
         return {"status": "error", "message": f"File {stock_symbol}.xlsx not found at {file_path}"}
         
