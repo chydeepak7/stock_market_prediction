@@ -1,3 +1,6 @@
+import matplotlib
+matplotlib.use('Agg')  # Use non-interactive backend (perfect for servers)
+
 from django.shortcuts import render, redirect
 import os
 import matplotlib.pyplot as plt
@@ -106,7 +109,10 @@ def home_view(request):
     context = {
         'chart_image': None,
         'forecast_chart': None,
+        'forecast_signals': [],
         'stock_symbol': stock,
+        'overall_summary': "No forecast data available yet.",
+        'summary_class': 'neutral'
     }
 
     # Correct paths inside saved_states folder
@@ -130,6 +136,69 @@ def home_view(request):
             df_forecast['Forecast_Date'] = pd.to_datetime(df_forecast['Forecast_Date'])
             df_forecast.set_index('Forecast_Date', inplace=True)
             context['forecast_chart'] = generate_chart_image(df_forecast, 'forecast')
+
+            # === Generate Buy/Sell Signals ===
+            prices = df_forecast['Predicted_Close_Price'].values
+            dates = df_forecast.index.strftime('%Y-%m-%d').tolist()
+
+            signals = []
+            for i in range(len(prices)):
+                price = prices[i]
+                date_str = dates[i]
+
+                # Simple trend-based signal logic
+                if i == 0:
+                    signal = "Hold"
+                elif i == 1:
+                    signal = "Hold"
+                else:
+                    prev_price = prices[i-1]
+                    prev2_price = prices[i-2]
+
+                    # Upward trend
+                    if price > prev_price > prev2_price:
+                        signal = "Strong Buy"
+                    elif price > prev_price:
+                        signal = "Buy"
+                    # Downward trend
+                    elif price < prev_price < prev2_price:
+                        signal = "Strong Sell"
+                    elif price < prev_price:
+                        signal = "Sell"
+                    else:
+                        signal = "Hold"
+
+                signals.append({
+                    'date': date_str,
+                    'price': round(price, 2),
+                    'signal': signal
+                })
+
+            context['forecast_signals'] = signals
+
+            # === Overall 30-Day Summary ===
+            buy_count = len([s for s in signals if 'Buy' in s['signal']])
+            sell_count = len([s for s in signals if 'Sell' in s['signal']])
+            strong_buy = len([s for s in signals if s['signal'] == 'Strong Buy'])
+            strong_sell = len([s for s in signals if s['signal'] == 'Strong Sell'])
+
+            if strong_buy >= 8:
+                summary = "Strong Buy Opportunity"
+                context['summary_class'] = 'strong-buy'
+            elif buy_count > sell_count + 3:
+                summary = "Bullish – Recommended to Buy"
+                context['summary_class'] = 'buy'
+            elif sell_count > buy_count + 3:
+                summary = "Bearish – Consider Selling"
+                context['summary_class'] = 'sell'
+            elif strong_sell >= 5:
+                summary = "Strong Sell Signal"
+                context['summary_class'] = 'strong-sell'
+            else:
+                summary = "Neutral – Hold Position"
+                context['summary_class'] = 'neutral'
+
+            context['overall_summary'] = f"Overall 30-Day Outlook: {summary}"
         except Exception as e:
             messages.error(request, f"Error loading forecast chart: {str(e)}")
 
