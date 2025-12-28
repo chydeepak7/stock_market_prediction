@@ -270,7 +270,7 @@
 
     <div class="container">
       <header>
-        <h1>{{ stock_symbol }} Stock Price Prediction</h1>
+        <h1>{{ stock_symbol }} Stock Signal Prediction</h1>
         <a href="{% url 'welcome' %}" class="back-link">← Back to Stock Selection</a>
       </header>
 
@@ -309,7 +309,7 @@
             <thead>
               <tr>
                 <th>Date</th>
-                <th>Predicted Price</th>
+                <!-- <th>Predicted Price</th> -->
                 <th>Signal</th>
               </tr>
             </thead>
@@ -317,7 +317,7 @@
               {% for item in forecast_signals %}
               <tr>
                 <td>{{ item.date }}</td>
-                <td>Rs. {{ item.price }}</td>
+                <!-- <td>Rs. {{ item.price }}</td> -->
                 <td class="signal-{{ item.signal|lower|slugify }}">{{ item.signal }}</td>
               </tr>
               {% endfor %}

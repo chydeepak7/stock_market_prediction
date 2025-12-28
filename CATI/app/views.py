@@ -229,6 +229,9 @@ def welcome_view(request):
         ('NABIL', 'Nabil Bank (NABIL)'),
         ('NTC', 'Nepal Telecom (NTC)'),
         ('UPPER', 'Upper Tamakoshi (UPPER)'),
+        ('CIT', 'Citizen Investment Trust (CIT)'),
+        ('HRL', 'Himalayan Reinsurance Limited  (HRL)'),
+        ('GBIME', 'GBIME Bank (GBIME)'),
         # Add more stocks here as needed
     ]
 
