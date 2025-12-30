@@ -9,7 +9,7 @@ https://docs.djangoproject.com/en/5.0/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.0/ref/settings/
 """
-
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -26,7 +26,8 @@ SECRET_KEY = "django-insecure-!k!k1+kxq+r6difp$msnu^c6fa(zv(br+6sjch4g#*e0tc4yfn
 DEBUG = True
 
 ALLOWED_HOSTS = []
-
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'saved_states/images')
 
 # Application definition
 

@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 import io
 import base64
 import pandas as pd
+import seaborn as sns
 import plotly.express as px
 from plotly.offline import plot
 import joblib
@@ -16,6 +17,8 @@ from django.conf import settings
 from django.http import HttpResponse 
 from django.template.loader import render_to_string
 from django import forms
+import numpy as np
+from sklearn.metrics import mean_absolute_error, mean_squared_error
 # Create your views here.
 
 
@@ -84,140 +87,106 @@ from django.shortcuts import render
 from django.contrib import messages
 from .services import run_prediction_pipeline # Import the function we just made
 
-# def trigger_training_view(request):
-#     """
-#     Call this view (e.g., via a button) to run the ML training.
-#     """
-#     context = {}
-#     if request.method == "POST":
-#         try:
-#             # Run the heavy logic
-#             result = run_prediction_pipeline()
-            
-#             if result['status'] == 'success':
-#                 messages.success(request, "Model trained and Excel files updated successfully!")
-#             else:
-#                 messages.error(request, result['message'])
-                
-#         except Exception as e:
-#             messages.error(request, f"Error running pipeline: {str(e)}")
-            
-#     return render(request, 'app/app.html', context)
-
 def home_view(request):
     stock = request.GET.get('stock', 'CHCL')
     context = {
-        'chart_image': None,
-        'forecast_chart': None,
         'forecast_signals': [],
         'stock_symbol': stock,
         'overall_summary': "No forecast data available yet.",
-        'summary_class': 'neutral'
+        'summary_class': 'neutral',
+        'ensemble_accuracy': None,
+        'ensemble_balanced_accuracy': None,
+        'confusion_image': None,
+        'indicators_comparison_image': None,
+        'signals_test_image': None,
+        'equity_image': None,
+        'backtest_metrics': {},
     }
-
-    # Correct paths inside saved_states folder
+    
+    # Paths
     backtest_path = os.path.join(settings.BASE_DIR, 'saved_states', f'{stock}_backtest_results.xlsx')
     forecast_path = os.path.join(settings.BASE_DIR, 'saved_states', f'{stock}_future_30_day_forecast.xlsx')
-
-    # Load Backtest Chart
+    
+    cm_path = os.path.join(settings.BASE_DIR, 'saved_states/images', f'{stock}_confusion.png')
+    fi_path = os.path.join(settings.BASE_DIR, 'saved_states/images', f'{stock}_feature_importance.png')
+    signals_path = os.path.join(settings.BASE_DIR, 'saved_states/images', f'{stock}_signals_test.png')
+    equity_path = os.path.join(settings.BASE_DIR, 'saved_states/images', f'{stock}_equity_curve.png')
+    
+    # Load Images (simple & safe)
+    context['confusion_image'] = f"/media/{stock}_confusion.png" if os.path.exists(cm_path) else None
+    context['indicators_comparison_image'] = f"/media/{stock}_feature_importance.png" if os.path.exists(fi_path) else None
+    context['signals_test_image'] = f"/media/{stock}_signals_test.png" if os.path.exists(signals_path) else None
+    context['equity_image'] = f"/media/{stock}_equity_curve.png" if os.path.exists(equity_path) else None
+    
+    # Load Backtest Data
     if os.path.exists(backtest_path):
         try:
-            df_backtest = pd.read_excel(backtest_path)
-            df_backtest['Date'] = pd.to_datetime(df_backtest['Date'])
-            df_backtest.set_index('Date', inplace=True)
-            context['chart_image'] = generate_chart_image(df_backtest, 'backtest')
+            # Metrics
+            metrics_df = pd.read_excel(backtest_path, sheet_name='Metrics')
+            context['ensemble_accuracy'] = dict(metrics_df.set_index('Metric')['Value']).get('Accuracy')
+            context['ensemble_balanced_accuracy'] = dict(metrics_df.set_index('Metric')['Value']).get('Balanced Accuracy')
+            
+            # Backtest Metrics
+            backtest_metrics_df = pd.read_excel(backtest_path, sheet_name='Backtest_Metrics')
+            context['backtest_metrics'] = dict(zip(backtest_metrics_df['Metric'], backtest_metrics_df['Value']))
         except Exception as e:
-            messages.error(request, f"Error loading backtest chart: {str(e)}")
-
-    # Load Forecast Chart
+            messages.error(request, f"Error loading backtest data: {str(e)}")
+    
+    # Load Forecast Data
     if os.path.exists(forecast_path):
         try:
             df_forecast = pd.read_excel(forecast_path)
             df_forecast['Forecast_Date'] = pd.to_datetime(df_forecast['Forecast_Date'])
-            df_forecast.set_index('Forecast_Date', inplace=True)
-            context['forecast_chart'] = generate_chart_image(df_forecast, 'forecast')
-
-            # === Generate Buy/Sell Signals ===
-            prices = df_forecast['Predicted_Close_Price'].values
-            dates = df_forecast.index.strftime('%Y-%m-%d').tolist()
-
-            signals = []
-            for i in range(len(prices)):
-                price = prices[i]
-                date_str = dates[i]
-
-                # Simple trend-based signal logic
-                if i == 0:
-                    signal = "Hold"
-                elif i == 1:
-                    signal = "Hold"
-                else:
-                    prev_price = prices[i-1]
-                    prev2_price = prices[i-2]
-
-                    # Upward trend
-                    if price > prev_price > prev2_price:
-                        signal = "Strong Buy"
-                    elif price > prev_price:
-                        signal = "Buy"
-                    # Downward trend
-                    elif price < prev_price < prev2_price:
-                        signal = "Strong Sell"
-                    elif price < prev_price:
-                        signal = "Sell"
-                    else:
-                        signal = "Hold"
-
-                signals.append({
-                    'date': date_str,
-                    'price': round(price, 2),
-                    'signal': signal
-                })
-
-            context['forecast_signals'] = signals
-
-            # === Overall 30-Day Summary ===
-            buy_count = len([s for s in signals if 'Buy' in s['signal']])
-            sell_count = len([s for s in signals if 'Sell' in s['signal']])
-            strong_buy = len([s for s in signals if s['signal'] == 'Strong Buy'])
-            strong_sell = len([s for s in signals if s['signal'] == 'Strong Sell'])
-
-            if strong_buy >= 8:
-                summary = "Strong Buy Opportunity"
-                context['summary_class'] = 'strong-buy'
-            elif buy_count > sell_count + 3:
+            context['forecast_signals'] = [
+                {
+                    'date': row['Forecast_Date'].strftime('%Y-%m-%d'),
+                    'signal': row['Signal'],
+                    'score': round(row['Score'], 4)
+                } for _, row in df_forecast.iterrows()
+            ]
+            # Overall Summary
+            buy_count = sum(1 for s in context['forecast_signals'] if s['signal'] == 'BUY')
+            sell_count = sum(1 for s in context['forecast_signals'] if s['signal'] == 'SELL')
+            if buy_count > sell_count + 3:
                 summary = "Bullish – Recommended to Buy"
                 context['summary_class'] = 'buy'
             elif sell_count > buy_count + 3:
                 summary = "Bearish – Consider Selling"
                 context['summary_class'] = 'sell'
-            elif strong_sell >= 5:
-                summary = "Strong Sell Signal"
-                context['summary_class'] = 'strong-sell'
             else:
                 summary = "Neutral – Hold Position"
                 context['summary_class'] = 'neutral'
-
             context['overall_summary'] = f"Overall 30-Day Outlook: {summary}"
         except Exception as e:
-            messages.error(request, f"Error loading forecast chart: {str(e)}")
-
-    # Handle Model Training (only on valid POST)
+            messages.error(request, f"Error loading forecast data: {str(e)}")
+    
+    # Handle Model Training
     if request.method == "POST" and request.POST.get('train_model'):
         try:
             messages.info(request, f"Training started for {stock}... This may take 30–90 seconds.")
             result = run_prediction_pipeline(stock_symbol=stock)
-
-            if result['status'] == 'success':
-                messages.success(request,f"{stock} Model trained successfully! Charts updated below.")
+            
+            if result.get('status') == 'skip':
+                messages.info(request, result['message'])
+            elif result['status'] == 'success':
+                # Update from new training
+                context.update({
+                    'confusion_image': result['confusion_image'],
+                    'indicators_comparison_image': result['indicators_comparison_image'],
+                    'signals_test_image': result['signals_test_image'],
+                    'equity_image': result['equity_image'],
+                    'ensemble_accuracy': result.get('ensemble_accuracy'),
+                    'ensemble_balanced_accuracy': result.get('ensemble_balanced_accuracy'),
+                    'backtest_metrics': result.get('backtest_metrics', {}),
+                })
+                messages.success(request, "New best model saved — accuracy improved!")
             else:
                 messages.error(request, result.get('message', 'Training failed.'))
         except Exception as e:
-            messages.error(request, f"Training error for {stock}: {str(e)}")
-
-        # Prevent re-submission and infinite loop
+            messages.error(request, f"Training error: {str(e)}")
+        
         return redirect(f'/predict/?stock={stock}')
-
+    
     return render(request, 'app/app.html', context)
 
 def welcome_view(request):
@@ -225,19 +194,18 @@ def welcome_view(request):
     Welcome page with stock selection dropdown.
     """
     stocks = [
-        ('CHCL', 'Chilime Hydropower (CHCL)'),
         ('NABIL', 'Nabil Bank (NABIL)'),
         ('NTC', 'Nepal Telecom (NTC)'),
-        ('UPPER', 'Upper Tamakoshi (UPPER)'),
         ('CIT', 'Citizen Investment Trust (CIT)'),
         ('HRL', 'Himalayan Reinsurance Limited  (HRL)'),
         ('GBIME', 'GBIME Bank (GBIME)'),
+        ('NRIC', 'Nepal Reinsurance Company Limited (NRIC)'),
         # Add more stocks here as needed
     ]
 
     context = {
         'stocks': stocks,
-        'selected_stock': request.GET.get('stock', 'CHCL'),  # Default to CHCL
+        'selected_stock': request.GET.get('stock', 'NABIL'),  # Default to CHCL
     }
 
     if request.method == "POST":

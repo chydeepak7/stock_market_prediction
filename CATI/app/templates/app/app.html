@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>{{ page_title }}</title>
+    <title>{{ stock_symbol }}</title>
     <style>
       body {
         font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -108,7 +108,65 @@
         opacity: 1;
       }
 
-      /* ==================== REST OF  STYLES ==================== */
+      /* Clean Model Accuracy Card */
+      .accuracy-card {
+        margin: 40px 0;
+        padding: 35px;
+        background-color: #f8f9fc;
+        border-radius: 14px;
+        border: 1px solid #e0e6ed;
+        text-align: center;
+      }
+
+      .metrics-grid {
+        display: flex;
+        justify-content: center;
+        gap: 30px;
+        flex-wrap: wrap;
+        margin: 20px 0;
+      }
+
+      .metric-item {
+        background: white;
+        padding: 25px;
+        border-radius: 12px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.06);
+        min-width: 180px;
+        flex: 1;
+        max-width: 250px;
+      }
+
+      .metric-value {
+        font-size: 2.4rem;
+        font-weight: bold;
+        color: #2c3e50;
+        margin-bottom: 10px;
+      }
+
+      .metric-label {
+        font-size: 1.1rem;
+        color: #555;
+        font-weight: 500;
+      }
+
+      .accuracy-hint {
+        margin-top: 20px;
+        font-size: 1.05rem;
+        color: #666;
+        font-style: italic;
+      }
+
+      @media (max-width: 768px) {
+        .metrics-grid {
+          flex-direction: column;
+          gap: 20px;
+        }
+        .metric-item {
+          max-width: none;
+        }
+      }
+
+      /* ==================== REST OF STYLES ==================== */
       .charts-row {
         display: flex;
         gap: 20px;
@@ -124,6 +182,7 @@
         padding: 20px;
         background-color: #fafafa;
         box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        position: relative;
       }
 
       .chart-box h2 {
@@ -137,6 +196,36 @@
         height: auto;
         border-radius: 6px;
         box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        cursor: zoom-in;
+        transition: transform 0.3s ease;
+      }
+
+      .chart-box img:hover {
+        transform: scale(1.02);
+      }
+
+      /* Lightbox Modal for Full-Screen Image */
+      .lightbox {
+        display: none;
+        position: fixed;
+        top: 0; left: 0;
+        width: 100%; height: 100%;
+        background-color: rgba(0, 0, 0, 0.9);
+        z-index: 10000;
+        justify-content: center;
+        align-items: center;
+        cursor: zoom-out;
+      }
+
+      .lightbox img {
+        max-width: 90%;
+        max-height: 90%;
+        border-radius: 8px;
+        box-shadow: 0 0 30px rgba(0,0,0,0.8);
+      }
+
+      .lightbox.active {
+        display: flex;
       }
 
       .summary-box {
@@ -227,6 +316,13 @@
         font-size: 1.5rem;
       }
 
+      #loading-text {
+        margin-top: 1rem;
+        font-size: 1.2rem;
+        text-align: center;
+        white-space: pre-line;
+      }
+
       .spinner {
         border: 8px solid #f3f3f3;
         border-top: 8px solid #3498db;
@@ -254,6 +350,7 @@
     <div id="loading-overlay">
       <div class="spinner"></div>
       <p>Training {{ stock_symbol }} model...<br>Please wait 30–90 seconds.</p>
+      <pre id="loading-text"></pre>
     </div>
 
     <!-- Toast Messages Container -->
@@ -268,33 +365,109 @@
       {% endif %}
     </div>
 
+    <!-- Lightbox Modal -->
+    <div id="lightbox" class="lightbox">
+      <img id="lightbox-img" src="" alt="Full Screen Chart" />
+    </div>
+
     <div class="container">
       <header>
-        <h1>{{ stock_symbol }} Stock Signal Prediction</h1>
+        <h1>{{ stock_symbol }} Buy/Sell Signals</h1>
         <a href="{% url 'welcome' %}" class="back-link">← Back to Stock Selection</a>
       </header>
 
       <div class="content">
-        <!-- Charts Side by Side -->
+        <!-- Charts -->
         <div class="charts-row">
+          {% if confusion_image %}
           <div class="chart-box">
-            <h2>Backtest: Real vs Predicted</h2>
-            {% if chart_image %}
-              <img src="{{ chart_image }}" alt="Backtest" />
-            {% else %}
-              <p><em>Train model to see backtest results</em></p>
-            {% endif %}
+            <h2>Ensemble Confusion Matrix</h2>
+            <img src="{{ confusion_image }}" alt="Confusion Matrix" class="zoomable-img" />
           </div>
+          {% else %}
+          <div class="chart-box"><p><em>Train model to generate confusion matrix</em></p></div>
+          {% endif %}
 
+          {% if signals_test_image %}
           <div class="chart-box">
-            <h2>30-Day Price Forecast</h2>
-            {% if forecast_chart %}
-              <img src="{{ forecast_chart }}" alt="Forecast" />
-            {% else %}
-              <p><em>Train model to see forecast</em></p>
-            {% endif %}
+            <h2>Ensemble Buy/Sell Signals (Test Period)</h2>
+            <img src="{{ signals_test_image }}" alt="Buy/Sell Signals" class="zoomable-img" />
           </div>
+          {% else %}
+          <div class="chart-box"><p><em>Train model to generate signals chart</em></p></div>
+          {% endif %}
+
+          {% if equity_image %}
+          <div class="chart-box">
+            <h2>Backtest Equity Curve (Long-Only)</h2>
+            <img src="{{ equity_image }}" alt="Equity Curve" class="zoomable-img" />
+            <p class="accuracy-hint">Sharpe Ratio: <strong>{{ backtest_metrics.sharpe_ratio|default:"N/A"|floatformat:4 }}</strong></p>
+            <p class="accuracy-hint">Max Drawdown: <strong>{{ backtest_metrics.max_drawdown|default:"N/A"|floatformat:2 }}%</strong></p>
+            <p class="accuracy-hint">Market Exposure : <strong>{{ backtest_metrics.exposure|default:"N/A"|floatformat:2 }}%</strong></p>
+            <p class="accuracy-hint" style="margin-top: 1.5rem; font-size: 1rem; color: #666;">
+                <strong>Interpretation:</strong> Sharpe > 1.0 = Excellent • > 0.5 = Good • Max Drawdown < -20% = High risk
+              </p>
+            <!-- Backtest Performance Metrics (Responsive with rem units) -->
+            <!-- <div style="margin-top: 2rem; padding: 1.5rem; background: linear-gradient(135deg, #f0f8ff, #e6f2ff); border-radius: 0.75rem; text-align: center; box-shadow: 0 0.25rem 0.9375rem rgba(0,0,0,0.08);">
+              <h3 style="margin: 0 0 1.5rem 0; color: #2c3e50; font-size: 1.5rem;">Backtest Performance Metrics</h3>
+              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(12.5rem, 1fr)); gap: 1.5rem;">
+                <div class="metric-item" style="padding: 1.5rem; background: white; border-radius: 0.625rem; box-shadow: 0 0.125rem 0.5rem rgba(0,0,0,0.05);">
+                  <div class="metric-value" style="font-size: 2.5rem; color: {% if backtest_metrics.sharpe_ratio > 1 %}#28a745{% elif backtest_metrics.sharpe_ratio > 0 %}#f39c12{% else %}#e74c3c{% endif %};">
+                    {{ backtest_metrics.sharpe_ratio|default:"N/A"|floatformat:4 }}
+                  </div>
+                  <div class="metric-label" style="font-size: 1.1rem; color: #555; margin-top: 0.5rem;">Sharpe Ratio</div>
+                </div>
+                <div class="metric-item" style="padding: 1.5rem; background: white; border-radius: 0.625rem; box-shadow: 0 0.125rem 0.5rem rgba(0,0,0,0.05);">
+                  <div class="metric-value" style="font-size: 2.5rem; color: #e74c3c;">
+                    {{ backtest_metrics.max_drawdown|default:"N/A"|floatformat:2 }}%
+                  </div>
+                  <div class="metric-label" style="font-size: 1.1rem; color: #555; margin-top: 0.5rem;">Max Drawdown</div>
+                </div>
+                <div class="metric-item" style="padding: 1.5rem; background: white; border-radius: 0.625rem; box-shadow: 0 0.125rem 0.5rem rgba(0,0,0,0.05);">
+                  <div class="metric-value" style="font-size: 2.5rem; color: #3498db;">
+                    {{ backtest_metrics.exposure|default:"N/A"|floatformat:2 }}%
+                  </div>
+                  <div class="metric-label" style="font-size: 1.1rem; color: #555; margin-top: 0.5rem;">Market Exposure</div>
+                </div>
+              </div>
+              
+            </div> -->
+          </div>
+          {% else %}
+          <div class="chart-box"><p><em>Train the model to generate equity curve and performance metrics</em></p></div>
+          {% endif %}
+
+          {% if indicators_comparison_image %}
+          <div class="chart-box">
+            <h2>Comparison of Technical Indicators</h2>
+            <img src="{{ indicators_comparison_image }}" alt="Feature Importance" class="zoomable-img" />
+          </div>
+          {% else %}
+          <div class="chart-box"><p><em>Train model to generate feature importance</em></p></div>
+          {% endif %} 
         </div>
+
+        <!-- Model Accuracy Metrics -->
+        {% if ensemble_accuracy is not none %}
+        <div class="accuracy-card">
+          <h2 style="text-align:center; margin-bottom:25px; color:#2c3e50;">
+            Model Accuracy Metrics
+          </h2>
+          <div class="metrics-grid">
+            <div class="metric-item">
+              <div class="metric-value">{{ ensemble_accuracy|floatformat:2 }}</div>
+              <div class="metric-label">Ensemble Accuracy</div>
+            </div>
+            <div class="metric-item">
+              <div class="metric-value">{{ ensemble_balanced_accuracy|floatformat:2 }}</div>
+              <div class="metric-label">Ensemble Balanced Accuracy</div>
+            </div>
+          </div>
+          <p class="accuracy-hint">
+            Higher values indicate better directional prediction performance.
+          </p>
+        </div>
+        {% endif %}
 
         <!-- Overall Summary -->
         {% if forecast_signals %}
@@ -309,7 +482,6 @@
             <thead>
               <tr>
                 <th>Date</th>
-                <!-- <th>Predicted Price</th> -->
                 <th>Signal</th>
               </tr>
             </thead>
@@ -317,7 +489,6 @@
               {% for item in forecast_signals %}
               <tr>
                 <td>{{ item.date }}</td>
-                <!-- <td>Rs. {{ item.price }}</td> -->
                 <td class="signal-{{ item.signal|lower|slugify }}">{{ item.signal }}</td>
               </tr>
               {% endfor %}
@@ -343,13 +514,42 @@
       // Loading Overlay Logic
       const form = document.getElementById('train-form');
       const overlay = document.getElementById('loading-overlay');
+      const loadingText = document.getElementById('loading-text');
       const btn = document.getElementById('train-btn');
 
       form.addEventListener('submit', () => {
         overlay.style.display = 'flex';
         btn.disabled = true;
         btn.textContent = 'Training in Progress...';
+        loadingText.textContent = 'Initializing pipeline...';
       });
+
+      // Simulate streaming progress (since real streaming not possible in Django)
+      // You can enhance this later with AJAX polling if needed
+      let progressMessages = [
+        "--- Starting Prediction Pipeline ---",
+        "Fetched dataset",
+        "Indicators added and labels generated",
+        "Data split into training and testing sets",
+        "LSTM model training in progress...",
+        "LSTM model trained",
+        "XGBoost and Random Forest models trained",
+        "Ensemble predictions generated",
+        "Generating backtest results",
+        "Generating future predictions",
+        "Saving plots",
+        "Pipeline Complete. Refreshing results..."
+      ];
+
+      let index = 0;
+      const interval = setInterval(() => {
+        if (index < progressMessages.length) {
+          loadingText.textContent += progressMessages[index] + '\n';
+          index++;
+        } else {
+          clearInterval(interval);
+        }
+      }, 8000);  // Adjust timing to match average training phases
 
       window.addEventListener('load', () => {
         overlay.style.display = 'none';
@@ -362,14 +562,11 @@
         const alerts = document.querySelectorAll('.message-alert');
 
         alerts.forEach(alert => {
-          // Ensure it's visible (in case page reloaded)
           alert.classList.add('show');
 
-          // Auto-close after 6 seconds
           const timeout = alert.getAttribute('data-autoclose') || 6000;
           const autoCloseTimer = setTimeout(() => closeAlert(alert), timeout);
 
-          // Manual close
           const closeBtn = alert.querySelector('.close-btn');
           if (closeBtn) {
             closeBtn.addEventListener('click', () => {
@@ -382,12 +579,34 @@
         function closeAlert(alert) {
           alert.classList.remove('show');
           setTimeout(() => {
-            if (alert.parentNode) {
-              alert.parentNode.removeChild(alert);
-            }
-          }, 400);
+            if (alert.parentNode) alert.parentNode.removeChild(alert);
+          }, 6000);
         }
+      });
+
+      // Lightbox for Full-Screen Images
+      const lightbox = document.getElementById('lightbox');
+      const lightboxImg = document.getElementById('lightbox-img');
+      const images = document.querySelectorAll('.zoomable-img');
+
+      images.forEach(img => {
+        img.addEventListener('click', () => {
+          lightboxImg.src = img.src;
+          lightbox.classList.add('active');
+        });
+      });
+
+      lightbox.addEventListener('click', () => {
+        lightbox.classList.remove('active');
       });
     </script>
   </body>
 </html>
+
+
+
+
+
+
+
+
