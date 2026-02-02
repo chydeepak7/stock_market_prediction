@@ -68,7 +68,7 @@ schtasks /Delete /TN "StockMarketScraper" /F
 
 ---
 
-## What Happens at 5 PM Daily
+## What Happens at 11 PM Daily
 
 1. Windows runs `run_scraper.bat`
 2. The script runs `python manage.py scrape_daily --fill-gaps`

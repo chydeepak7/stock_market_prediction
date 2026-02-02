@@ -1,0 +1,36 @@
+# Future Works & Improvements
+
+## 1. Model Optimization
+- [ ] **Dynamic Decision Threshold**: 
+    - Current: Fixed at 0.60 for BUY signal.
+    - Proposal: Lower to 0.55 for stable stocks (NABIL) or use a per-stock threshold based on validation results to balance Precision vs Recall.
+- [ ] **Hyperparameter Tuning**: 
+    - Implement `GridSearchCV` or `RandomizedSearchCV` for LSTM and RandomForest.
+    - Tune `seq_len` (currently 30), `dropout` (0.3), and `n_estimators`.
+- [ ] **Feature Engineering**:
+    - Add "Market Regime" feature: Is NEPSE Index > SMA_200? (Bull/Bear filter).
+    - Add "Sector Trend": Relative strength of the Banking sector vs NEPSE.
+
+## 2. Data Pipeline
+- [ ] **Automated Retraining**: Implement a weekly job to retrain models on new data.
+- [ ] **Data Quality Checks**: Add alerts if scraped data volume deviates from average (e.g., volume spike or zero volume).
+- [ ] **News Sentiment**: Integrate financial news sentiment analysis as a feature.
+
+## 4. Financial RAG Chatbot (Advanced)
+- [ ] **Goal**: Create a "NEPSE-GPT" that answers user questions like "Should I buy NABIL?" by synthesizing:
+    1.  **Internal Data**: Our model's forecasts, DB records, and technical indicators (RSI, MACD).
+    2.  **External Data**: Real-time news/sentiment from the web (via Search API).
+    3.  **LLM Reasoning**: Use OpenAI/Gemini API to generate advice.
+- [ ] **Tech Stack Proposal**:
+    -   **Orchestration**: LangChain or LlamaIndex.
+    -   **Vector DB**: PGVector (supported by Neon!) to store news embeddings.
+    -   **Retriever**: Fetch `ModelMetaData` (accuracy), `ForecastResult` (signals), and recent News.
+        -   **Option A (API)**: OpenAI/Gemini (Easier, Pay-per-token).
+        -   **Option B (Self-Hosted & Specialized - CHOSEN)**:
+            -   **Core**: Run Llama 3 via Ollama locally.
+            -   **Specialization**: Feed it exclusively NEPSE data (Reports, News, Our Indicators) via RAG.
+            -   **Why**: This creates a "Domain Expert" without sending data to OpenAI. 100% Private & Free.
+- [ ] **Workflow**:
+    -   User asks: "Analyze NTC".
+    -   System fetches: NTC's RSI (35), Model Signal (Buy), Web News ("NTC profited 2B").
+    -   LLM Output: "Our model predicts BUY (conf 65%) because RSI is low... however, external news suggests..."

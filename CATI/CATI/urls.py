@@ -22,6 +22,7 @@ from app.views import *
 
 urlpatterns = [
     path('', welcome_view,name='welcome'),
+    path('chat/', chat_view, name='chat'),
     path('predict/', home_view, name='home'),
     path('app/', include('app.urls')),
     path("admin/", admin.site.urls),

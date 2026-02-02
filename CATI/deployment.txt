@@ -1,0 +1,32 @@
+# Deployment Guide for Railway (Scraper & DB)
+
+## 1. Local Verification (Do this first)
+Before deploying, make sure the scraper works locally:
+1. Open Terminal in project folder.
+2. Run database sync (ensure you have internet):
+   > python manage.py sync_db --direction=pull
+3. Run scraper:
+   > python manage.py scrape_daily --fill-gaps
+
+## 2. Deploy to Railway
+1. Go to https://railway.app/new
+2. Select "Deploy from GitHub repo" -> Select "stock_market_prediction".
+3. Wait for the build to finish (it might fail initially due to missing env vars).
+
+## 3. Configure Variables
+In the Railway Project Dashboard > "Variables" tab, set:
+- DATABASE_URL: postgresql://neondb_owner:npg_HRSmd04DflxJ@ep-square-lake-a1f208fr-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require
+- SECRET_KEY: (Generate a random string)
+- DEBUG: False
+
+## 4. Automation (Daily Scraper)
+To make the scraper run automatically every day:
+1. Go to "Settings" -> "Cron" (or "Service" settings).
+2. Add a Schedule:
+   - Schedule: "15 11 * * *" (This is 5:00 PM Nepal Time)
+   - Command: "python run_scraper.py"
+
+## 5. Verify
+Check the "Deployments" tab logs at 5:00 PM. You should see:
+"[SCRAPER] Gap-fill complete"
+"[SCRAPER] Total: X new records"

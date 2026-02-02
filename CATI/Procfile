@@ -1,1 +1,16 @@
-scraper: python manage.py scrape_daily --fill-gaps
+# Procfile for Railway/Heroku deployment
+# =======================================
+# This file defines process types.
+#
+# For SCRAPER-ONLY deployment (Cron Job):
+#   Railway will run the 'scraper' process based on cron schedule.
+#
+# For WEB APP deployment (if needed later):
+#   Uncomment the 'web' line.
+# =======================================
+
+# Scraper process (runs via Railway Cron Job)
+scraper: python scripts/update_market_data.py
+
+# Web server (uncomment if deploying the full web app)
+# web: gunicorn CATI.wsgi --bind 0.0.0.0:$PORT

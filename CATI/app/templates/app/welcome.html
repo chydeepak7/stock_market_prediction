@@ -1,118 +1,187 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Stock Prediction Dashboard</title>
-    <style>
-      body {
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        margin: 0;
-        padding: 0;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        min-height: 100vh;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-      }
 
-      .welcome-container {
-        background: rgba(255, 255, 255, 0.95);
-        color: #333;
-        border-radius: 16px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-        padding: 50px 60px;
-        text-align: center;
-        max-width: 600px;
-        width: 90%;
-      }
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Stock Prediction Dashboard</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
 
+    .welcome-container {
+      background: rgba(255, 255, 255, 0.95);
+      color: #333;
+      border-radius: 16px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+      padding: 40px;
+      text-align: center;
+      max-width: 900px;
+      /* Widened for side-by-side */
+      width: 95%;
+    }
+
+    h1 {
+      font-size: 3rem;
+      margin-bottom: 20px;
+      color: #2c3e50;
+    }
+
+    p {
+      font-size: 1.2rem;
+      margin-bottom: 40px;
+      color: #555;
+    }
+
+    .form-group {
+      margin-bottom: 30px;
+    }
+
+    label {
+      font-size: 1.3rem;
+      margin-bottom: 10px;
+      display: block;
+      color: #444;
+    }
+
+    select {
+      width: 100%;
+      padding: 14px;
+      font-size: 1.2rem;
+      border: 2px solid #3498db;
+      border-radius: 8px;
+      background: #f9f9f9;
+      cursor: pointer;
+    }
+
+    button {
+      padding: 16px 40px;
+      font-size: 1.3rem;
+      background-color: #3498db;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #2980b9;
+      transform: translateY(-2px);
+    }
+
+    .footer {
+      margin-top: 40px;
+      font-size: 0.9rem;
+      color: #777;
+    }
+
+    .options-grid {
+      display: flex;
+      gap: 40px;
+      margin-top: 40px;
+      text-align: left;
+    }
+
+    .option-card {
+      flex: 1;
+      padding: 20px;
+      background: #f8f9fa;
+      border-radius: 12px;
+      border: 1px solid #e9ecef;
+      transition: transform 0.2s;
+    }
+
+    .option-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+    }
+
+    .option-card h3 {
+      margin-top: 0;
+      color: #2c3e50;
+      font-size: 1.5rem;
+      margin-bottom: 10px;
+    }
+
+    .option-card p {
+      font-size: 1rem;
+      color: #666;
+      margin-bottom: 20px;
+    }
+
+    @media (max-width: 768px) {
       h1 {
-        font-size: 3rem;
-        margin-bottom: 20px;
-        color: #2c3e50;
-      }
-
-      p {
-        font-size: 1.2rem;
-        margin-bottom: 40px;
-        color: #555;
-      }
-
-      .form-group {
-        margin-bottom: 30px;
-      }
-
-      label {
-        font-size: 1.3rem;
-        margin-bottom: 10px;
-        display: block;
-        color: #444;
-      }
-
-      select {
-        width: 100%;
-        padding: 14px;
-        font-size: 1.2rem;
-        border: 2px solid #3498db;
-        border-radius: 8px;
-        background: #f9f9f9;
-        cursor: pointer;
+        font-size: 2.4rem;
       }
 
       button {
-        padding: 16px 40px;
-        font-size: 1.3rem;
-        background-color: #3498db;
-        color: white;
-        border: none;
-        border-radius: 8px;
-        cursor: pointer;
-        transition: all 0.3s ease;
+        width: 100%;
       }
 
-      button:hover {
-        background-color: #2980b9;
-        transform: translateY(-2px);
+      .options-grid {
+        flex-direction: column;
       }
 
-      .footer {
-        margin-top: 40px;
-        font-size: 0.9rem;
-        color: #777;
+      .welcome-container {
+        padding: 20px;
       }
+    }
+  </style>
+</head>
 
-      @media (max-width: 768px) {
-        h1 { font-size: 2.4rem; }
-        button { width: 100%; }
-      }
-    </style>
-  </head>
-  <body>
-    <div class="welcome-container">
-      <h1>Comparative Analysis Of Technical Indicators</h1>
-      <p>Select a stock to view its Technical indicators comparison, backtest results, and 30-day buy/sell signal.</p>
+<body>
+  <div class="welcome-container">
+    <h1>NEPSE Advisor AI</h1>
+    <p style="font-size: 1.1rem; color: #555;">Your comprehensive platform for Technical Analysis and Market Insights.
+    </p>
 
-      <form method="post">
-        {% csrf_token %}
-        <div class="form-group">
-          <label for="stock">Choose a Stock:</label>
-          <select name="stock" id="stock">
-            {% for value, label in stocks %}
+    <div class="options-grid">
+      <!-- Option 1: Prediction Dashboard -->
+      <div class="option-card">
+        <h3>📊 Market Analysis</h3>
+        <p>Select a stock to view technical indicators, backtest results, and buy/sell signals.</p>
+        <form method="post">
+          {% csrf_token %}
+          <div class="form-group">
+            <label for="stock" style="font-size: 1rem;">Choose a Stock:</label>
+            <select name="stock" id="stock">
+              {% for value, label in stocks %}
               <option value="{{ value }}" {% if value == selected_stock %}selected{% endif %}>
                 {{ label }}
               </option>
-            {% endfor %}
-          </select>
+              {% endfor %}
+            </select>
+          </div>
+          <button type="submit" style="width: 100%; padding: 12px;">View Analysis</button>
+        </form>
+      </div>
+
+      <!-- Option 2: AI Advisor -->
+      <div class="option-card">
+        <h3>💬 AI Advisor</h3>
+        <p>Chat with our AI to get explanations, ask about trends, or clear your doubts.</p>
+        <div style="margin-top: auto; display: flex; align-items: flex-end; height: 50%;">
+          <a href="{% url 'chat' %}" style="width: 100%; text-decoration: none;">
+            <button type="button" style="width: 100%; background-color: #6c5ce7; padding: 12px;">Start Chat</button>
+          </a>
         </div>
-
-        <button type="submit">View in Detail</button>
-      </form>
-
-      <div class="footer">
-        Powered by CATI | Hybrid LSTM + XGBoost Model + Random Forest
       </div>
     </div>
-  </body>
+
+    <div class="footer">
+      Powered by CATI | Hybrid LSTM + XGBoost Model
+    </div>
+  </div>
+</body>
+
 </html>

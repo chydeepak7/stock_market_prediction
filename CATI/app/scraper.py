@@ -3,6 +3,7 @@ ShareSansar Scraper Module
 Scrapes daily stock data from sharesansar.com and saves to database.
 """
 import logging
+import time
 import requests
 from bs4 import BeautifulSoup
 from datetime import datetime, timedelta
@@ -11,6 +12,7 @@ from django.utils import timezone
 logger = logging.getLogger('pipeline')
 
 SHARESANSAR_URL = "https://www.sharesansar.com/today-share-price"
+NEPSE_HOME_URL = "https://www.sharesansar.com/market"
 
 class ShareSansarScraper:
     """
@@ -121,7 +123,62 @@ class ShareSansarScraper:
         if not value or value == '-':
             return 0
         # Handle values like '4169.00' by parsing as float first
-        return int(float(value.replace(',', '')))
+        return int(float(str(value).replace(',', '')))
+    
+    def fetch_today_index(self):
+        """
+        Fetches the latest NEPSE Index from the datewise-indices page.
+        This provides a reliable 'Close' price for the index.
+        """
+        today = datetime.now().date()
+        url = f"https://www.sharesansar.com/datewise-indices?date={today.strftime('%Y-%m-%d')}"
+        logger.info(f"[SCRAPER] Fetching Indices from {url}")
+        
+        try:
+            response = self.session.get(url, timeout=30)
+            response.raise_for_status()
+        except requests.RequestException as e:
+            logger.error(f"[SCRAPER] Index Request failed: {e}")
+            return []
+            
+        soup = BeautifulSoup(response.text, 'html.parser')
+        data = []
+        table = soup.find('table')
+        
+        if not table:
+             # Try fallback to yesterday if today is holiday/empty?
+             # For now just log warning
+             logger.warning("[SCRAPER] No index table found (Market might be closed)")
+             return []
+        
+        rows = table.find_all('tr')
+        for row in rows:
+            cols = row.find_all('td')
+            if not cols: continue
+            
+            # 0: Name, 1: Value/Current
+            text0 = cols[0].get_text(strip=True).upper()
+            if 'NEPSE INDEX' in text0 or text0 == 'NEPSE':
+                try:
+                    val_str = cols[1].get_text(strip=True).replace(',', '')
+                    close_price = self._parse_float(val_str)
+                    
+                    if close_price > 0:
+                        data.append({
+                            'symbol': 'NEPSE',
+                            'date': today,
+                            'open': close_price,
+                            'high': close_price,
+                            'low': close_price,
+                            'close': close_price,
+                            'volume': 0,
+                            'category': 'index'
+                        })
+                        logger.info(f"[SCRAPER] Found NEPSE Index: {close_price}")
+                except Exception as e:
+                    logger.error(f"[SCRAPER] Error parsing NEPSE row: {e}")
+                    continue
+        return data
     
     def save_to_db(self, data):
         """
@@ -229,7 +286,15 @@ def run_scraper():
     logger.info("[SCRAPER] Starting daily scrape job")
     
     scraper = ShareSansarScraper()
-    data = scraper.fetch_today_data()
+    
+    # 1. Fetch Stocks
+    data_stocks = scraper.fetch_today_data()
+    
+    # 2. Fetch Index (NEPSE)
+    data_index = scraper.fetch_today_index()
+    
+    # Combine
+    data = data_stocks + data_index
     
     if data:
         created, skipped = scraper.save_to_db(data)
@@ -306,6 +371,9 @@ def run_scraper_with_gap_fill(max_days_back=30):
                 gaps_filled += 1
             else:
                 logger.info(f"[SCRAPER] No data for {current_date} (holiday?)")
+            
+            # Rate limiting to prevent ban
+            time.sleep(1)
         
         current_date += timedelta(days=1)
     

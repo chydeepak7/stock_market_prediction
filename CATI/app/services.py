@@ -292,15 +292,16 @@ def run_prediction_pipeline(stock_symbol='NABIL'):
     print("Fetched dataset from Database")
     
     # 3. Add Indicators
-    df_final = add_all_indicators(df_stock, df_market)
+    # 3. Add Indicators
+    df_with_ind = add_all_indicators(df_stock, df_market)
     
-    # 4. Add Labels
-    df_final = add_binary_barrier_labels(df_final, atr_mult=1.0, deadzone=1.0)
+    # 4. Add Labels (This drops recent ~40 days of data due to horizon)
+    df_labeled = add_binary_barrier_labels(df_with_ind, atr_mult=1.0, deadzone=1.0)
     
     # 5. Scale Features
     scaler = MinMaxScaler()
-    X_raw = scaler.fit_transform(df_final[FEATURES])
-    y_raw = df_final['Label'].values
+    X_raw = scaler.fit_transform(df_labeled[FEATURES])
+    y_raw = df_labeled['Label'].values
     
     # 6. Balance classes
     smote = SMOTE(random_state=42)
@@ -406,13 +407,13 @@ def run_prediction_pipeline(stock_symbol='NABIL'):
     importances = rf_model.feature_importances_.reshape(SEQ_LEN, len(FEATURES)).mean(axis=0)
     fi_df = pd.DataFrame({'Feature': FEATURES, 'Importance': importances}).sort_values('Importance', ascending=False)
     
-    # Backtest
-    prices_test = df_final['Close'].values[-len(y_test):]
+    # Backtest (Uses Labeled/Trainable data period)
+    prices_test = df_labeled['Close'].values[-len(y_test):]
     backtest_metrics, equity = backtest_long_only(prices_test, ensemble_pred)
     
     # Save Backtest Results (Excel backup)
     backtest_df = pd.DataFrame({
-        'Date': df_final.index[-len(y_test):],
+        'Date': df_labeled.index[-len(y_test):],
         'Close': prices_test,
         'Ensemble_Pred': ensemble_pred
     })
@@ -427,15 +428,15 @@ def run_prediction_pipeline(stock_symbol='NABIL'):
         
     print("Generating future predictions")
     
-    # 12. Future Predictions
-    X_future = build_future_tabular_inputs(df_final, FEATURES, scaler, seq_length=SEQ_LEN, future_days=30)
+    # 12. Future Predictions (Use FULL dataset with latest prices)
+    X_future = build_future_tabular_inputs(df_with_ind, FEATURES, scaler, seq_length=SEQ_LEN, future_days=30)
     lstm_future_p = model.predict(X_future, verbose=0).flatten()
     xgb_future_p = xgb_model.predict_proba(X_future.reshape(len(X_future), -1))[:, 1]
     rf_future_p = rf_model.predict_proba(X_future.reshape(len(X_future), -1))[:, 1]
     
     future_score = w_lstm * lstm_future_p + w_xgb * xgb_future_p + w_rf * rf_future_p
     future_signal = np.where(future_score > 0.55, 'BUY', 'SELL')
-    future_dates = pd.date_range(start=df_final.index[-1] + pd.Timedelta(days=1), periods=30, freq='B')
+    future_dates = pd.date_range(start=df_with_ind.index[-1] + pd.Timedelta(days=1), periods=30, freq='B')
     
     forecast_df = pd.DataFrame({
         'Forecast_Date': future_dates,
@@ -476,24 +477,47 @@ def run_prediction_pipeline(stock_symbol='NABIL'):
 
     # 3. Buy/Sell Signals
     fig, ax = plt.subplots(figsize=(12, 6))
-    prices_test = df_final['Close'].values[-len(y_test):]
-    ax.plot(df_final.index[-len(y_test):], prices_test, label='Price (Test Period)', color='blue', alpha=0.8)
+    prices_test = df_labeled['Close'].values[-len(y_test):]
+    ax.plot(df_labeled.index[-len(y_test):], prices_test, label='Price (Test Period)', color='blue', alpha=0.8)
     buy_idx = np.where(ensemble_pred == 1)[0]
     sell_idx = np.where(ensemble_pred == 0)[0]
-    ax.scatter(df_final.index[-len(y_test):][buy_idx], prices_test[buy_idx], marker='^', s=80, color='green', label='BUY Signal', zorder=5)
-    ax.scatter(df_final.index[-len(y_test):][sell_idx], prices_test[sell_idx], marker='v', s=80, color='red', label='SELL Signal', zorder=5)
+    ax.scatter(df_labeled.index[-len(y_test):][buy_idx], prices_test[buy_idx], marker='^', s=80, color='green', label='BUY Signal', zorder=5)
+    ax.scatter(df_labeled.index[-len(y_test):][sell_idx], prices_test[sell_idx], marker='v', s=80, color='red', label='SELL Signal', zorder=5)
     ax.set_title('Ensemble Buy/Sell Signals (Test Period)')
     ax.legend()
     ax.grid(alpha=0.3)
     signals_url = save_plot(fig, 'signals_test.png')
 
-    # 4. Equity Curve
-    fig, ax = plt.subplots(figsize=(10, 4))
-    ax.plot(np.concatenate(([1], equity)), color='purple', linewidth=2)
-    ax.set_title('Backtest Equity Curve (Long-Only)')
+    # 4. Candlestick Chart (Price History)
+    # Plot last 90 days of REAL data (including recent)
+    df_plot = df_with_ind.iloc[-90:] 
+    
+    fig, ax = plt.subplots(figsize=(12, 6))
+    
+    # Separate Up and Down days
+    up = df_plot[df_plot.Close >= df_plot.Open]
+    down = df_plot[df_plot.Close < df_plot.Open]
+    
+    # Plot Candles (Bar for body, Line (via Bar width) for wicks)
+    # Widths
+    width = 0.6
+    width2 = 0.05
+    
+    # Up Candles (Green)
+    ax.bar(up.index, up.Close - up.Open, width, bottom=up.Open, color='green', alpha=0.8)
+    ax.bar(up.index, up.High - up.Close, width2, bottom=up.Close, color='green', alpha=0.8)
+    ax.bar(up.index, up.Low - up.Open, width2, bottom=up.Open, color='green', alpha=0.8)
+    
+    # Down Candles (Red)
+    ax.bar(down.index, down.Close - down.Open, width, bottom=down.Open, color='red', alpha=0.8)
+    ax.bar(down.index, down.High - down.Open, width2, bottom=down.Open, color='red', alpha=0.8)
+    ax.bar(down.index, down.Low - down.Close, width2, bottom=down.Close, color='red', alpha=0.8)
+    
+    ax.set_title(f'{stock_symbol} Price History (Recent Trend)', fontsize=14)
     ax.grid(alpha=0.3)
-    ax.set_ylabel('Equity Growth')
-    equity_url = save_plot(fig, 'equity_curve.png')
+    ax.set_ylabel('Price (NPR)')
+    
+    candlestick_url = save_plot(fig, 'candlestick_chart.png')
 
     print(f"Pipeline Complete for {stock_symbol}. Saved {saved_count} forecasts to DB.")
     return {
@@ -501,7 +525,8 @@ def run_prediction_pipeline(stock_symbol='NABIL'):
         "confusion_image": confusion_url,
         "indicators_comparison_image": fi_url,
         "signals_test_image": signals_url,
-        "equity_image": equity_url,
+        "signals_test_image": signals_url,
+        "candlestick_image": candlestick_url,
         "ensemble_accuracy": round(acc *100, 4),
         "ensemble_balanced_accuracy": round(bal_acc *100, 4),
         "backtest_metrics": backtest_metrics

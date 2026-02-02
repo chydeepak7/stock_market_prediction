@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>NEPSE Advisor | AI Chat</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .chat-wrapper {
+            width: 100%;
+            max-width: 900px;
+            background: rgba(255, 255, 255, 0.95);
+            color: #333;
+            border-radius: 16px;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
+            display: flex;
+            flex-direction: column;
+            height: 85vh;
+            /* Fixed height for chat */
+            margin-top: 20px;
+            overflow: hidden;
+        }
+
+        /* Header */
+        .chat-header {
+            background: #2c3e50;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            border-bottom: 2px solid #ddd;
+        }
+
+        .chat-header h2 {
+            margin: 0;
+            font-size: 1.5rem;
+        }
+
+        .chat-header p {
+            margin: 5px 0 0;
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        /* Message Area */
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background: #f4f7f6;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        /* Bubble Styles */
+        .message {
+            max-width: 75%;
+            padding: 12px 18px;
+            border-radius: 18px;
+            font-size: 1rem;
+            line-height: 1.5;
+            position: relative;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .message.ai {
+            align-self: flex-start;
+            background: #e1f5fe;
+            color: #0277bd;
+            border-bottom-left-radius: 4px;
+            border: 1px solid #b3e5fc;
+        }
+
+        .message.user {
+            align-self: flex-end;
+            background: #667eea;
+            color: white;
+            border-bottom-right-radius: 4px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .message.system {
+            align-self: center;
+            background: #eee;
+            color: #666;
+            font-size: 0.85rem;
+            border-radius: 10px;
+            padding: 5px 15px;
+        }
+
+        /* Input Area */
+        .chat-input-area {
+            padding: 20px;
+            background: white;
+            border-top: 1px solid #eee;
+            display: flex;
+            gap: 10px;
+        }
+
+        .chat-input-area input {
+            flex: 1;
+            padding: 15px;
+            border-radius: 30px;
+            border: 2px solid #ddd;
+            font-size: 1rem;
+            outline: none;
+            transition: border 0.3s;
+        }
+
+        .chat-input-area input:focus {
+            border-color: #667eea;
+        }
+
+        .chat-input-area button {
+            background: #667eea;
+            color: white;
+            border: none;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            transition: transform 0.2s;
+        }
+
+        .chat-input-area button:hover {
+            transform: scale(1.1);
+            background: #764ba2;
+        }
+
+        /* Scrollbar */
+        .chat-messages::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .chat-messages::-webkit-scrollbar-thumb {
+            background: #ccc;
+            border-radius: 4px;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .back-btn {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: white;
+            text-decoration: none;
+            font-weight: bold;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 8px 15px;
+            border-radius: 20px;
+        }
+
+        .message.user:hover .message-actions {
+            display: flex;
+        }
+
+        .message-actions {
+            display: none;
+            position: absolute;
+            top: -35px;
+            right: 0;
+            background: #fff;
+            padding: 5px 10px;
+            border-radius: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+            gap: 8px;
+            z-index: 10;
+        }
+
+        .action-btn {
+            border: none;
+            background: none;
+            cursor: pointer;
+            font-size: 1rem;
+            color: #555;
+            padding: 2px;
+            transition: color 0.2s;
+        }
+
+        .action-btn:hover {
+            color: #667eea;
+        }
+    </style>
+</head>
+
+<body>
+    <a href="/" class="back-btn">← Back to Dashboard</a>
+
+    <div class="chat-wrapper">
+        <div class="chat-header">
+            <h2>NEPSE RAG Advisor</h2>
+            <p>Ask about stock trends, indicators, or market news</p>
+        </div>
+
+        <div class="chat-messages" id="chat-messages">
+            <!-- Messages will appear here -->
+            <div class="message system">Session Started</div>
+            <div class="message ai">Hello! I'm your NEPSE Advisor. I have access to real-time market data, technical
+                indicators (RSI, MACD), and forecasting models. How can I help you today?</div>
+        </div>
+
+        <form class="chat-input-area" id="chat-form" autocomplete="off">
+            {% csrf_token %}
+            <input type="text" id="user-input" autocomplete="off"
+                placeholder="Ask e.g., 'Should I buy NABIL?' or 'What is the RSI of NTC?'" required>
+            <button type="submit">➤</button>
+        </form>
+    </div>
+
+    <script>
+        const form = document.getElementById('chat-form');
+        const input = document.getElementById('user-input');
+        const messages = document.getElementById('chat-messages');
+
+        form.addEventListener('submit', function (e) {
+            e.preventDefault();
+            const text = input.value.trim();
+            if (!text) return;
+
+            // Add User Message
+            addMessage(text, 'user');
+            input.value = '';
+
+            // Simulate AI Response (Placeholder for now)
+            setTimeout(() => {
+                const response = generateMockResponse(text);
+                addMessage(response, 'ai');
+            }, 1000);
+        });
+
+        function addMessage(text, sender) {
+            const div = document.createElement('div');
+            div.classList.add('message', sender);
+
+            // Text Content
+            const textSpan = document.createElement('span');
+            textSpan.textContent = text;
+            div.appendChild(textSpan);
+
+            // Actions (Edit/Delete) - Only for User
+            if (sender === 'user') {
+                const actions = document.createElement('div');
+                actions.className = 'message-actions';
+
+                // Edit
+                const editBtn = document.createElement('button');
+                editBtn.className = 'action-btn';
+                editBtn.innerHTML = '✎';
+                editBtn.title = 'Edit';
+                editBtn.onclick = () => {
+                    input.value = text;
+                    input.focus();
+                    div.remove();
+                };
+
+                // Delete
+                const deleteBtn = document.createElement('button');
+                deleteBtn.className = 'action-btn';
+                deleteBtn.innerHTML = '🗑';
+                deleteBtn.title = 'Delete';
+                deleteBtn.onclick = () => {
+                    if (confirm("Delete this message?")) div.remove();
+                };
+
+                actions.appendChild(editBtn);
+                actions.appendChild(deleteBtn);
+                div.appendChild(actions);
+            }
+
+            messages.appendChild(div);
+            messages.scrollTop = messages.scrollHeight;
+        }
+
+        function generateMockResponse(query) {
+            // This is just a UI Demo. Real RAG logic will be connected later.
+            if (query.toLowerCase().includes('nabil')) {
+                return "Based on my analysis, NABIL is showing signs of stability. RSI is 42 (Neutral) and the LSTM model predicts a slight uptrend (Conf: 58%).";
+            }
+            if (query.toLowerCase().includes('buy')) {
+                return "I recommend looking at HRL and CHCL, as they currently have Strong Buy signals from our ensemble model.";
+            }
+            return "That's an interesting question about the market. Currently, NEPSE index is consolidating. I can analyze specific stocks if you provide a symbol.";
+        }
+    </script>
+</body>
+
+</html>
