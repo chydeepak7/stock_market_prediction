@@ -181,6 +181,11 @@ def add_all_indicators(df_stock, df_market):
         var = returns['market'].rolling(window).var()
         beta = cov / var
         df['Beta'] = beta.reindex(df.index)
+    else:
+        df['Beta'] = 1.0
+        
+    # Fill any remaining NaNs in Beta (e.g. non-overlapping dates) with 1.0
+    df['Beta'] = df['Beta'].fillna(1.0)
 
     return df.dropna()
 

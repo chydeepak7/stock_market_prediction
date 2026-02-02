@@ -71,10 +71,11 @@ class Command(BaseCommand):
             return 0, 0
         
         # Standardize column names
+        df.columns = df.columns.str.strip().str.lower()
+        
         column_mapping = {
             'time': 'date',
-            'Time': 'date',
-            'Date': 'date',
+            'date': 'date',
         }
         df = df.rename(columns=column_mapping)
         
@@ -88,36 +89,41 @@ class Command(BaseCommand):
             logger.warning(f"[CMD] Skipping {file_path}: missing required columns. Found: {df.columns.tolist()}")
             return 0, 0
         
+        batch_size = 1000
+        objects = []
+        
         imported = 0
-        skipped = 0
+        skipped = 0 # With ignore_conflicts, we don't know exact skipped count easily, but that's fine
         
         for _, row in df.iterrows():
             try:
                 date_val = pd.to_datetime(row['date']).date()
                 
-                if dry_run:
-                    imported += 1
-                    continue
-                
-                obj, created = StockData.objects.get_or_create(
+                obj = StockData(
                     symbol=row['symbol'],
                     date=date_val,
-                    defaults={
-                        'open': float(row['open']),
-                        'high': float(row['high']),
-                        'low': float(row['low']),
-                        'close': float(row['close']),
-                        'volume': int(row['volume']),
-                        'category': row.get('category', 'stock'),
-                    }
+                    open=float(row['open']),
+                    high=float(row['high']),
+                    low=float(row['low']),
+                    close=float(row['close']),
+                    volume=int(row['volume']),
+                    category=row.get('category', 'stock')
                 )
-                if created:
-                    imported += 1
-                else:
-                    skipped += 1
+                objects.append(obj)
+                
+                if len(objects) >= batch_size:
+                    if not dry_run:
+                        StockData.objects.bulk_create(objects, ignore_conflicts=True)
+                    imported += len(objects)
+                    objects = []
             except Exception as e:
-                logger.debug(f"[CMD] Error importing row: {e}")
-                skipped += 1
+                logger.debug(f"[CMD] Error parsing row: {e}")
                 continue
         
-        return imported, skipped
+        # Insert remaining
+        if objects:
+            if not dry_run:
+                StockData.objects.bulk_create(objects, ignore_conflicts=True)
+            imported += len(objects)
+            
+        return imported, 0 # We assume conflicts are skipped silently

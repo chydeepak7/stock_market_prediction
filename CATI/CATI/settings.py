@@ -111,12 +111,9 @@ else:
 
 
 
-# Validated Top 20 Companies by Market Capitalization (Approx)
+# Stocks with confirmed historical data (from backup)
 TOP_20_STOCKS = [
-    "NABIL", "NTC", "NRIC", "CIT", "HRL", 
-    "NICA", "GBIME", "HIDCL", "NIBL", "EBL",
-    "SCB", "ADBL", "PCBL", "PRVU", "NMB",
-    "SBI", "SANIMA", "MNBBL", "NIFRA", "CHCL"
+    "NABIL", "NTC", "CIT", "GBIME", "HRL", "CHCL"
 ]
 
 AUTH_PASSWORD_VALIDATORS = [
