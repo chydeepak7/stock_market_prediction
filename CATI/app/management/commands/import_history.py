@@ -13,14 +13,11 @@ logger = logging.getLogger('pipeline')
 
 
 class Command(BaseCommand):
-    help = 'Imports historical stock data from CSV files into the database'
+    help = 'Classes management command to import historical stock data from CSV files'
 
     def add_arguments(self, parser):
-        parser.add_argument(
-            '--symbol',
-            type=str,
-            help='Import only a specific symbol (e.g., NABIL)',
-        )
+        parser.add_argument('--symbol', type=str, help='Specific symbol to import')
+        parser.add_argument('--top20', action='store_true', help='Import only Top 20 stocks')
         parser.add_argument(
             '--dry-run',
             action='store_true',
@@ -34,13 +31,20 @@ class Command(BaseCommand):
             self.stdout.write(self.style.ERROR(f"Data directory not found: {data_dir}"))
             return
         
-        logger.info(f"[CMD] import_history started. Directory: {data_dir}")
-        self.stdout.write(self.style.NOTICE(f"Importing from: {data_dir}"))
-        
         csv_files = [f for f in os.listdir(data_dir) if f.endswith('.csv')]
         
-        if options['symbol']:
-            csv_files = [f for f in csv_files if f.startswith(options['symbol'])]
+        target_symbol = options['symbol']
+        if target_symbol:
+            csv_files = [f"{target_symbol}.csv"]
+        
+        if options['top20'] and hasattr(settings, 'TOP_20_STOCKS'):
+            top_files = [f"{s}.csv" for s in settings.TOP_20_STOCKS]
+            # Filter only those that exist
+            csv_files = [f for f in csv_files if f in top_files]
+            self.stdout.write(f"Filtered to Top 20 stocks ({len(csv_files)} found)")
+
+        logger.info(f"[CMD] import_history started for {len(csv_files)} files...")
+        self.stdout.write(self.style.NOTICE(f"Importing from: {data_dir}"))
         
         total_imported = 0
         total_skipped = 0
@@ -74,9 +78,14 @@ class Command(BaseCommand):
         }
         df = df.rename(columns=column_mapping)
         
+        if 'symbol' not in df.columns:
+            # Infer symbol from filename
+            symbol_from_file = os.path.splitext(os.path.basename(file_path))[0]
+            df['symbol'] = symbol_from_file
+
         required_cols = ['date', 'symbol', 'open', 'close', 'high', 'low', 'volume']
         if not all(col in df.columns for col in required_cols):
-            logger.warning(f"[CMD] Skipping {file_path}: missing required columns")
+            logger.warning(f"[CMD] Skipping {file_path}: missing required columns. Found: {df.columns.tolist()}")
             return 0, 0
         
         imported = 0
