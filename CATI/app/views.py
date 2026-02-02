@@ -201,22 +201,10 @@ def home_view(request):
 
 def welcome_view(request):
     """
-    Welcome page with stock selection dropdown.
+    Welcome page with stock selection dropdown (Top 20 restricted).
     """
-    # Get unique symbols from DB, fallback to hardcoded list if empty
-    db_symbols = StockData.objects.values_list('symbol', flat=True).distinct().order_by('symbol')
-    
-    if db_symbols:
-        stocks = [(s, f"{s} Stock") for s in db_symbols]
-    else:
-        stocks = [
-            ('NABIL', 'Nabil Bank (NABIL)'),
-            ('NTC', 'Nepal Telecom (NTC)'),
-            ('CIT', 'Citizen Investment Trust (CIT)'),
-            ('HRL', 'Himalayan Reinsurance Limited  (HRL)'),
-            ('GBIME', 'GBIME Bank (GBIME)'),
-            ('NRIC', 'Nepal Reinsurance Company Limited (NRIC)'),
-        ]
+    stocks_list = settings.TOP_20_STOCKS
+    stocks = [(s, f"{s}") for s in stocks_list]
 
     context = {
         'stocks': stocks,

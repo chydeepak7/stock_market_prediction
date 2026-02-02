@@ -53,15 +53,20 @@ class Command(BaseCommand):
         data_dir = os.path.join(settings.BASE_DIR, 'saved_states', 'data')
         os.makedirs(data_dir, exist_ok=True)
 
-        # Get all unique symbols
         if symbol:
             symbols = [symbol]
         else:
-            symbols = StockData.objects.values_list('symbol', flat=True).distinct()
+            # Default to Top 20 stocks to avoid massive export
+            if hasattr(settings, 'TOP_20_STOCKS'):
+                symbols = settings.TOP_20_STOCKS
+                self.stdout.write(f"Defaulting to Top {len(symbols)} stocks (use --all to export everything)")
+            else:
+                symbols = StockData.objects.values_list('symbol', flat=True).distinct()
 
         self.stdout.write(f'Exporting {len(list(symbols))} symbols to CSV...')
 
         for sym in symbols:
+            # Sanitize symbol for filename
             # Sanitize symbol for filename
             safe_sym = "".join([c for c in sym if c.isalnum() or c in (' ', '-', '_')]).strip()
             

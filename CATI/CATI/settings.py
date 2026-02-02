@@ -111,8 +111,13 @@ else:
 
 
 
-# Password validation
-# https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
+# Validated Top 20 Companies by Market Capitalization (Approx)
+TOP_20_STOCKS = [
+    "NABIL", "NTC", "NRIC", "CIT", "HRL", 
+    "NICA", "GBIME", "HIDCL", "NIBL", "EBL",
+    "SCB", "ADBL", "PCBL", "PRVU", "NMB",
+    "SBI", "SANIMA", "MNBBL", "NIFRA", "CHCL"
+]
 
 AUTH_PASSWORD_VALIDATORS = [
     {
