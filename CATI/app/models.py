@@ -27,26 +27,37 @@ class StockData(models.Model):
 
 
 class ForecastResult(models.Model):
+    SIGNAL_CHOICES = [
+        ('BUY', 'Buy'),
+        ('SELL', 'Sell'),
+        ('HOLD', 'Hold'),
+    ]
+    
     symbol = models.CharField(max_length=20)
     forecast_date = models.DateField()
-    predicted_price = models.FloatField()
+    predicted_signal = models.CharField(max_length=10, choices=SIGNAL_CHOICES, default='HOLD')
+    confidence_score = models.FloatField(default=0.5, help_text="Model confidence (0-1)")
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         indexes = [
             models.Index(fields=['symbol', 'forecast_date']),
         ]
-        ordering = ['-forecast_date']
+        ordering = ['forecast_date']
 
     def __str__(self):
-        return f"{self.symbol} Forecast for {self.forecast_date}: {self.predicted_price}"
+        return f"{self.symbol} {self.forecast_date}: {self.predicted_signal} ({self.confidence_score:.2f})"
 
 
 class ModelMetaData(models.Model):
-    symbol = models.CharField(max_length=20)
-    last_trained_at = models.DateTimeField(auto_now=True)
-    accuracy = models.FloatField(null=True, blank=True, help_text="Accuracy score of the model")
-    classification_report = models.TextField(null=True, blank=True, help_text="JSON or text representation of usage metrics")
+    symbol = models.CharField(max_length=20, unique=True)
+    last_trained = models.DateTimeField(auto_now=True)
+    accuracy = models.FloatField(null=True, blank=True, help_text="Accuracy score (0-1)")
+    balanced_accuracy = models.FloatField(null=True, blank=True, help_text="Balanced accuracy score (0-1)")
+    classification_report = models.TextField(null=True, blank=True, help_text="JSON classification report")
+    
+    class Meta:
+        verbose_name_plural = "Model Metadata"
     
     def __str__(self):
-        return f"{self.symbol} - Last Train: {self.last_trained_at}"
+        return f"{self.symbol} - Acc: {self.accuracy:.2%} - {self.last_trained}"

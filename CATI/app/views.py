@@ -12,6 +12,7 @@ import base64
 import pandas as pd
 import numpy as np
 from .services import run_prediction_pipeline
+from .models import ForecastResult, ModelMetaData, StockData
 
 # --- Helper Functions ---
 
@@ -24,22 +25,23 @@ def generate_chart_image(df, chart_type='backtest'):
     ax = fig.subplots()
     
     if chart_type == 'backtest':
-        ax.plot(df.index, df['Real_Market_Price'], 
+        ax.plot(df.index, df['Close'], 
                  label='Real Market Price', color='black', alpha=0.8, linewidth=2)
-        ax.plot(df.index, df['Hybrid_Prediction'], 
-                 label='Hybrid Prediction', color='orange', linewidth=3)
-        ax.set_title('Backtest: Real vs Hybrid Prediction', fontsize=16)
+        # Assuming we have predictions in df, but backtest view logic is tricky without full data
+        # For now, let's just plot Close if that's all we have from DB
+        ax.set_title('Stock Price History', fontsize=16)
     
     elif chart_type == 'forecast':
-        ax.plot(df.index, df['Predicted_Close_Price'], 
-                 label='Predicted Close Price', color='green', linewidth=3)
-        ax.set_title('30-Day Future Price Forecast', fontsize=16)
+        ax.plot(df.index, df['confidence_score'], 
+                 label='Confidence Score', color='green', linewidth=3, marker='o')
+        ax.set_title('30-Day Forecast Confidence', fontsize=16)
+        ax.set_ylim(0, 1)
     
     else:
         return None
 
     ax.set_xlabel('Date')
-    ax.set_ylabel('Price (NPR)')
+    ax.set_ylabel('Value')
     ax.legend()
     ax.grid(True, alpha=0.3)
     fig.tight_layout()
@@ -55,59 +57,38 @@ def generate_chart_image(df, chart_type='backtest'):
 # --- Views ---
 
 def backtest_view(request):
-    stock = request.GET.get('stock', 'NABIL') # Default or get from request if needed
-    # Note: The original code hardcoded the filename. 
-    # Logic suggests we might want to respect the stock symbol if possible, 
-    # but sticking to previous behavior for the specific 'backtest_results.xlsx' file 
-    # if it was intended to be global, OR improving it to be dynamic.
-    # Given the other views use f'{stock}_...', let's assume valid paths are mostly dynamic 
-    # but the original code pointed to a specific file. 
-    # I will keep the original file path behavior but cleaner.
-    
-    # Original behavior was: file_path = os.path.join(settings.BASE_DIR, 'saved_states', 'backtest_results.xlsx')
-    # If the user wants specific stock backtests, they should probably be routed differently, 
-    # but for this specific view function refactor, I will maintain the file path logic 
-    # OR update it to be generic if that file strictly exists.
-    
-    # Let's use the generic file path from the original code for safety, 
-    # but ideally this should be dynamic like home_view.
-    file_path = os.path.join(settings.BASE_DIR, 'saved_states', 'backtest_results.xlsx')
-    
-    context = {}
-    if os.path.exists(file_path):
-        try:
-            df = pd.read_excel(file_path)
-            if 'Date' in df.columns:
-                df.set_index('Date', inplace=True)
-            
-            chart_image = generate_chart_image(df, chart_type='backtest')
-            context['chart_image'] = chart_image
-        except Exception as e:
-            messages.error(request, f"Error generating backtest chart: {str(e)}")
-    else:
-        # Fallback or empty state
-        pass
-
-    return render(request, 'app/app.html', context)
+    """
+    View to show historical data/backtest.
+    For now, we'll show the generic backtest result file if it exists,
+    or better: redirect to the main dashboard which has all the charts.
+    """
+    return redirect('home')
 
 
 def forecast_view(request):
-    # Similar logic for forecast
-    file_path = os.path.join(settings.BASE_DIR, 'saved_states', 'future_30_day_forecast.xlsx')
+    """
+    Shows forecast for a specific stock using DB data.
+    """
+    stock = request.GET.get('stock', 'NABIL')
     
-    context = {}
-    if os.path.exists(file_path):
-        try:
-            df = pd.read_excel(file_path)
-            if 'Forecast_Date' in df.columns:
-                df.set_index('Forecast_Date', inplace=True)
+    context = {'stock_symbol': stock}
+    
+    # Fetch from DB
+    forecasts = ForecastResult.objects.filter(symbol=stock).order_by('forecast_date')
+    
+    if forecasts.exists():
+        data = list(forecasts.values('forecast_date', 'predicted_signal', 'confidence_score'))
+        df = pd.DataFrame(data)
+        df.rename(columns={'forecast_date': 'Date'}, inplace=True)
+        df.set_index('Date', inplace=True)
+        
+        chart_image = generate_chart_image(df, chart_type='forecast')
+        context['chart_image'] = chart_image
+        context['forecasts'] = forecasts
+    else:
+        messages.warning(request, f"No forecast data found for {stock}. Please train the model first.")
             
-            chart_image = generate_chart_image(df, chart_type='forecast')
-            context['chart_image'] = chart_image
-        except Exception as e:
-            messages.error(request, f"Error generating forecast chart: {str(e)}")
-            
-    return render(request, 'app/app.html', context)
+    return render(request, 'app/app.html', context) # Reusing app.html or create specific template
 
 
 def home_view(request):
@@ -126,62 +107,59 @@ def home_view(request):
         'backtest_metrics': {},
     }
     
-    # Paths
-    backtest_path = os.path.join(settings.BASE_DIR, 'saved_states', f'{stock}_backtest_results.xlsx')
-    forecast_path = os.path.join(settings.BASE_DIR, 'saved_states', f'{stock}_future_30_day_forecast.xlsx')
-    
+    # 1. Load Forecasts from DB
+    forecasts = ForecastResult.objects.filter(symbol=stock).order_by('forecast_date')
+    if forecasts.exists():
+        context['forecast_signals'] = [
+            {
+                'date': f.forecast_date.strftime('%Y-%m-%d'),
+                'signal': f.predicted_signal,
+                'score': round(f.confidence_score, 4)
+            } for f in forecasts
+        ]
+        
+        # Overall Summary
+        buy_count = forecasts.filter(predicted_signal='BUY').count()
+        sell_count = forecasts.filter(predicted_signal='SELL').count()
+        
+        if buy_count > sell_count + 3:
+            summary = "Bullish – Recommended to Buy"
+            context['summary_class'] = 'buy'
+        elif sell_count > buy_count + 3:
+            summary = "Bearish – Consider Selling"
+            context['summary_class'] = 'sell'
+        else:
+            summary = "Neutral – Hold Position"
+            context['summary_class'] = 'neutral'
+        context['overall_summary'] = f"Overall 30-Day Outlook: {summary}"
+
+    # 2. Load Model Metadata from DB
+    meta = ModelMetaData.objects.filter(symbol=stock).first()
+    if meta:
+        context['ensemble_accuracy'] = meta.accuracy
+        context['ensemble_balanced_accuracy'] = meta.balanced_accuracy
+        # We could parse classification_report json if needed
+
+    # 3. Load Images (Filesystem)
+    # Images are still generated by services.py and saved to disk
     cm_path = os.path.join(settings.BASE_DIR, 'saved_states/images', f'{stock}_confusion.png')
     fi_path = os.path.join(settings.BASE_DIR, 'saved_states/images', f'{stock}_feature_importance.png')
     signals_path = os.path.join(settings.BASE_DIR, 'saved_states/images', f'{stock}_signals_test.png')
     equity_path = os.path.join(settings.BASE_DIR, 'saved_states/images', f'{stock}_equity_curve.png')
     
-    # Load Images (simple & safe)
     context['confusion_image'] = f"/media/{stock}_confusion.png" if os.path.exists(cm_path) else None
     context['indicators_comparison_image'] = f"/media/{stock}_feature_importance.png" if os.path.exists(fi_path) else None
     context['signals_test_image'] = f"/media/{stock}_signals_test.png" if os.path.exists(signals_path) else None
     context['equity_image'] = f"/media/{stock}_equity_curve.png" if os.path.exists(equity_path) else None
     
-    # Load Backtest Data
+    # 4. Load Backtest Metrics (Excel fallback for now, or could store in ModelMetaData)
+    backtest_path = os.path.join(settings.BASE_DIR, 'saved_states', f'{stock}_backtest_results.xlsx')
     if os.path.exists(backtest_path):
         try:
-            # Metrics
-            metrics_df = pd.read_excel(backtest_path, sheet_name='Metrics')
-            context['ensemble_accuracy'] = dict(metrics_df.set_index('Metric')['Value']).get('Accuracy')
-            context['ensemble_balanced_accuracy'] = dict(metrics_df.set_index('Metric')['Value']).get('Balanced Accuracy')
-            
-            # Backtest Metrics
             backtest_metrics_df = pd.read_excel(backtest_path, sheet_name='Backtest_Metrics')
             context['backtest_metrics'] = dict(zip(backtest_metrics_df['Metric'], backtest_metrics_df['Value']))
-        except Exception as e:
-            messages.error(request, f"Error loading backtest data: {str(e)}")
-    
-    # Load Forecast Data
-    if os.path.exists(forecast_path):
-        try:
-            df_forecast = pd.read_excel(forecast_path)
-            df_forecast['Forecast_Date'] = pd.to_datetime(df_forecast['Forecast_Date'])
-            context['forecast_signals'] = [
-                {
-                    'date': row['Forecast_Date'].strftime('%Y-%m-%d'),
-                    'signal': row['Signal'],
-                    'score': round(row['Score'], 4)
-                } for _, row in df_forecast.iterrows()
-            ]
-            # Overall Summary
-            buy_count = sum(1 for s in context['forecast_signals'] if s['signal'] == 'BUY')
-            sell_count = sum(1 for s in context['forecast_signals'] if s['signal'] == 'SELL')
-            if buy_count > sell_count + 3:
-                summary = "Bullish – Recommended to Buy"
-                context['summary_class'] = 'buy'
-            elif sell_count > buy_count + 3:
-                summary = "Bearish – Consider Selling"
-                context['summary_class'] = 'sell'
-            else:
-                summary = "Neutral – Hold Position"
-                context['summary_class'] = 'neutral'
-            context['overall_summary'] = f"Overall 30-Day Outlook: {summary}"
-        except Exception as e:
-            messages.error(request, f"Error loading forecast data: {str(e)}")
+        except Exception:
+            pass
     
     # Handle Model Training
     if request.method == "POST" and request.POST.get('train_model'):
@@ -192,7 +170,7 @@ def home_view(request):
             if result.get('status') == 'skip':
                 messages.info(request, result['message'])
             elif result['status'] == 'success':
-                # Update from new training
+                # Update context from result immediately
                 context.update({
                     'confusion_image': result['confusion_image'],
                     'indicators_comparison_image': result['indicators_comparison_image'],
@@ -202,6 +180,15 @@ def home_view(request):
                     'ensemble_balanced_accuracy': result.get('ensemble_balanced_accuracy'),
                     'backtest_metrics': result.get('backtest_metrics', {}),
                 })
+                # Reload forecasts from DB
+                forecasts = ForecastResult.objects.filter(symbol=stock).order_by('forecast_date')
+                context['forecast_signals'] = [
+                    {
+                        'date': f.forecast_date.strftime('%Y-%m-%d'),
+                        'signal': f.predicted_signal,
+                        'score': round(f.confidence_score, 4)
+                    } for f in forecasts
+                ]
                 messages.success(request, "New best model saved — accuracy improved!")
             else:
                 messages.error(request, result.get('message', 'Training failed.'))
@@ -216,25 +203,29 @@ def welcome_view(request):
     """
     Welcome page with stock selection dropdown.
     """
-    stocks = [
-        ('NABIL', 'Nabil Bank (NABIL)'),
-        ('NTC', 'Nepal Telecom (NTC)'),
-        ('CIT', 'Citizen Investment Trust (CIT)'),
-        ('HRL', 'Himalayan Reinsurance Limited  (HRL)'),
-        ('GBIME', 'GBIME Bank (GBIME)'),
-        ('NRIC', 'Nepal Reinsurance Company Limited (NRIC)'),
-        # Add more stocks here as needed
-    ]
+    # Get unique symbols from DB, fallback to hardcoded list if empty
+    db_symbols = StockData.objects.values_list('symbol', flat=True).distinct().order_by('symbol')
+    
+    if db_symbols:
+        stocks = [(s, f"{s} Stock") for s in db_symbols]
+    else:
+        stocks = [
+            ('NABIL', 'Nabil Bank (NABIL)'),
+            ('NTC', 'Nepal Telecom (NTC)'),
+            ('CIT', 'Citizen Investment Trust (CIT)'),
+            ('HRL', 'Himalayan Reinsurance Limited  (HRL)'),
+            ('GBIME', 'GBIME Bank (GBIME)'),
+            ('NRIC', 'Nepal Reinsurance Company Limited (NRIC)'),
+        ]
 
     context = {
         'stocks': stocks,
-        'selected_stock': request.GET.get('stock', 'NABIL'),  # Default to CHCL
+        'selected_stock': request.GET.get('stock', 'NABIL'),
     }
 
     if request.method == "POST":
         selected_stock = request.POST.get('stock')
         if selected_stock:
-            # Redirect to the prediction page with stock as query param
             return redirect(f'/predict/?stock={selected_stock}')
 
     return render(request, 'app/welcome.html', context)
@@ -242,8 +233,7 @@ def welcome_view(request):
 
 def log_view(request):
     """
-    View to display pipeline logs for developers.
-    Shows the last N lines of the pipeline.log file.
+    View to display pipeline logs.
     """
     log_file_path = os.path.join(settings.BASE_DIR, 'saved_states', 'pipeline.log')
     lines_to_show = int(request.GET.get('lines', 100))

@@ -1,5 +1,7 @@
 # # services.py
 import os
+import json
+import logging
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -20,10 +22,118 @@ from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import LSTM, Dense, Input, Dropout
 from tensorflow.keras.callbacks import EarlyStopping
 from django.conf import settings
+from django.utils import timezone
+
+logger = logging.getLogger('pipeline')
 
 # --- CONFIGURATION ---
 FEATURES = ['RSI', 'MACD', 'MACD_EMA', 'EMA_20', 'BB_Upper', 'BB_Lower', 'ATR','OBV','VWAP', 'Beta']
 SEQ_LEN = 30
+
+
+# ==================== DATABASE HELPER FUNCTIONS ====================
+
+def get_stock_data_from_db(symbol, use_csv_fallback=True):
+    """
+    Fetch stock data from database. Falls back to CSV if DB is empty.
+    Returns a DataFrame with standard column names.
+    """
+    from app.models import StockData
+    
+    qs = StockData.objects.filter(symbol=symbol).order_by('date')
+    
+    if qs.exists():
+        logger.info(f"[SERVICES] Loading {symbol} from database ({qs.count()} records)")
+        data = list(qs.values('date', 'open', 'high', 'low', 'close', 'volume'))
+        df = pd.DataFrame(data)
+        df.rename(columns={'date': 'Date', 'open': 'Open', 'high': 'High', 
+                          'low': 'Low', 'close': 'Close', 'volume': 'Volume'}, inplace=True)
+        df['Date'] = pd.to_datetime(df['Date'])
+        df.set_index('Date', inplace=True)
+        return df
+    
+    elif use_csv_fallback:
+        logger.warning(f"[SERVICES] No DB data for {symbol}, falling back to CSV")
+        return _load_from_csv(symbol)
+    
+    else:
+        logger.error(f"[SERVICES] No data found for {symbol}")
+        return None
+
+
+def get_market_data_from_db(use_csv_fallback=True):
+    """Fetch NEPSE market data from database."""
+    return get_stock_data_from_db('NEPSE', use_csv_fallback)
+
+
+def _load_from_csv(symbol):
+    """Load stock data from CSV file (fallback method)."""
+    file_path = os.path.join(settings.BASE_DIR, 'saved_states/data', f'{symbol}.csv')
+    if not os.path.exists(file_path):
+        return None
+    
+    df = pd.read_csv(file_path)
+    df = df.iloc[::-1].reset_index(drop=True)
+    
+    rename_dict = {
+        'time': 'Date', 'open': 'Open', 'high': 'High',
+        'low': 'Low', 'close': 'Close', 'volume': 'Volume'
+    }
+    df.rename(columns=rename_dict, inplace=True)
+    df['Date'] = pd.to_datetime(df['Date'])
+    df.set_index('Date', inplace=True)
+    df.sort_index(inplace=True)
+    return df
+
+
+def save_forecast_to_db(symbol, forecast_df):
+    """Save forecast results to ForecastResult model."""
+    from app.models import ForecastResult
+    
+    # Clear old forecasts for this symbol
+    ForecastResult.objects.filter(symbol=symbol).delete()
+    
+    # Create new forecast records
+    forecasts = []
+    for _, row in forecast_df.iterrows():
+        forecasts.append(ForecastResult(
+            symbol=symbol,
+            forecast_date=row['Forecast_Date'],
+            predicted_signal=row['Signal'],
+            confidence_score=float(row['Score'])
+        ))
+    
+    ForecastResult.objects.bulk_create(forecasts)
+    logger.info(f"[SERVICES] Saved {len(forecasts)} forecasts for {symbol} to database")
+    return len(forecasts)
+
+
+def save_model_metadata_to_db(symbol, accuracy, balanced_accuracy, classification_report_dict):
+    """Save model training metadata to ModelMetaData model."""
+    from app.models import ModelMetaData
+    
+    # Update or create metadata for this symbol
+    metadata, created = ModelMetaData.objects.update_or_create(
+        symbol=symbol,
+        defaults={
+            'last_trained': timezone.now(),
+            'accuracy': accuracy,
+            'balanced_accuracy': balanced_accuracy,
+            'classification_report': json.dumps(classification_report_dict),
+        }
+    )
+    
+    action = "Created" if created else "Updated"
+    logger.info(f"[SERVICES] {action} model metadata for {symbol}: acc={accuracy:.2%}")
+    return metadata
+
+
+def get_available_symbols():
+    """Get list of symbols available in the database."""
+    from app.models import StockData
+    return list(StockData.objects.values_list('symbol', flat=True).distinct())
+
+
 
 def add_all_indicators(df_stock, df_market):
     df = df_stock.copy()
@@ -163,60 +273,36 @@ def backtest_long_only(prices, signals):
 def run_prediction_pipeline(stock_symbol='NABIL'):
     print("--- Starting Prediction Pipeline ---")
     
-    # 1. Load Stock Data
-    file_path = os.path.join(settings.BASE_DIR, 'saved_states/data', f'{stock_symbol}.csv')
-    if not os.path.exists(file_path):
-        return {"status": "error", "message": f"File {stock_symbol}.csv not found at {file_path}"}
+    # 1. Load Stock Data (from DB)
+    df_stock = get_stock_data_from_db(stock_symbol)
+    if df_stock is None or df_stock.empty:
+        return {"status": "error", "message": f"No data found for {stock_symbol} in DB or CSV"}
     
-    df_stock = pd.read_csv(file_path)
-    df_stock = df_stock.iloc[::-1].reset_index(drop=True)
+    # 2. Load Market Data (from DB)
+    df_market = get_market_data_from_db()
+    if df_market is None or df_market.empty:
+        print("Warning: NEPSE data not found in DB, indicators checking beta will fail")
+        df_market = pd.DataFrame()
+        
+    print("Fetched dataset from Database")
     
-    # Rename columns if necessary
-    rename_dict = {
-        'time': 'Date',
-        'open': 'Open',
-        'high': 'High',
-        'low': 'Low',
-        'close': 'Close',
-        'volume': 'Volume',
-        'category': 'Category'
-    }
-    df_stock.rename(columns=rename_dict, inplace=True)
-    
-    df_stock['Date'] = pd.to_datetime(df_stock['Date'])
-    df_stock.set_index('Date', inplace=True)
-    df_stock.sort_index(inplace=True)
-    
-    # Load Market Data
-    market_path = os.path.join(settings.BASE_DIR, 'saved_states/data', 'NEPSE.csv')
-    if not os.path.exists(market_path):
-        return {"status": "error", "message": "NEPSE.csv not found"}
-    
-    df_market = pd.read_csv(market_path)
-    df_market.rename(columns=rename_dict, inplace=True)
-    df_market = df_market.iloc[::-1].reset_index(drop=True)
-    df_market['Date'] = pd.to_datetime(df_market['Date'])
-    df_market.set_index('Date', inplace=True)
-    df_market.sort_index(inplace=True)
-    print("Fetched dataset ")
-    
-    # 2. Add Indicators
+    # 3. Add Indicators
     df_final = add_all_indicators(df_stock, df_market)
     
-    # 3. Add Labels
+    # 4. Add Labels
     df_final = add_binary_barrier_labels(df_final, atr_mult=1.0, deadzone=1.0)
     
-    # 4. Scale Features
+    # 5. Scale Features
     scaler = MinMaxScaler()
     X_raw = scaler.fit_transform(df_final[FEATURES])
     y_raw = df_final['Label'].values
     
-    # 5. Balance classes
+    # 6. Balance classes
     smote = SMOTE(random_state=42)
     X_bal, y_bal = smote.fit_resample(X_raw, y_raw)
-    print("Indicators added and labels generated ")
+    print("Indicators added and labels generated")
     
-    # 6. Build Sequences
+    # 7. Build Sequences
     X, y = [], []
     for i in range(SEQ_LEN, len(X_bal)):
         X.append(X_bal[i-SEQ_LEN:i])
@@ -225,13 +311,13 @@ def run_prediction_pipeline(stock_symbol='NABIL'):
     X = np.array(X)
     y = np.array(y)
     
-    # 7. Split
+    # 8. Split
     split = int(0.8 * len(X))
     X_train, X_test = X[:split], X[split:]
     y_train, y_test = y[:split], y[split:]
-    print("Data split into training and testing sets ")
+    print("Data split into training and testing sets")
     
-    # 8. Train LSTM
+    # 9. Train LSTM
     model = Sequential([
         Input(shape=(SEQ_LEN, len(FEATURES))),
         LSTM(64),
@@ -253,9 +339,9 @@ def run_prediction_pipeline(stock_symbol='NABIL'):
         callbacks=[EarlyStopping(patience=6, restore_best_weights=True)],
         verbose=1
     )
-    print("LSTM model trained ")
+    print("LSTM model trained")
     
-    # 9. Train XGB and RF
+    # 10. Train XGB and RF
     X_train_flat = X_train.reshape(len(X_train), -1)
     X_test_flat  = X_test.reshape(len(X_test), -1)
 
@@ -278,9 +364,9 @@ def run_prediction_pipeline(stock_symbol='NABIL'):
     )
     rf_model.fit(X_train_flat, y_train)
 
-    print("XGBoost and Random Forest models trained ")
+    print("XGBoost and Random Forest models trained")
     
-    # 10. Ensemble
+    # 11. Ensemble
     lstm_p = model.predict(X_test, verbose=0).flatten()
     xgb_p = xgb_model.predict_proba(X_test_flat)[:, 1]
     rf_p = rf_model.predict_proba(X_test_flat)[:, 1]
@@ -298,73 +384,34 @@ def run_prediction_pipeline(stock_symbol='NABIL'):
     ensemble_score = w_lstm * lstm_p + w_xgb * xgb_p + w_rf * rf_p
     ensemble_pred = (ensemble_score > 0.6).astype(int)
     
-    print("Ensemble predictions generated ")
+    print("Ensemble predictions generated")
     
-    print("Weights:", w_lstm, w_xgb, w_rf)
-    print("Accuracy:", accuracy_score(y_test, ensemble_pred))
-    print("Balanced Accuracy:", balanced_accuracy_score(y_test, ensemble_pred))
-    print("Classification Report:")
-    print(classification_report(y_test, ensemble_pred, target_names=["SELL","BUY"]))
-    
-    # 11. Metrics
+    # Metrics
     acc = accuracy_score(y_test, ensemble_pred) 
     bal_acc = balanced_accuracy_score(y_test, ensemble_pred) 
     cm = confusion_matrix(y_test, ensemble_pred, labels=[0, 1])
     
+    # Save Model Metadata to DB
+    cls_report = classification_report(y_test, ensemble_pred, target_names=["SELL","BUY"], output_dict=True)
+    save_model_metadata_to_db(stock_symbol, acc, bal_acc, cls_report)
+    
     conf_df = pd.DataFrame(cm, index=['SELL', 'BUY'], columns=['Pred SELL', 'Pred BUY'])
     
-    # === BEST ACCURACY CHECK & SAVE ===
-    import json
-
-    best_file = os.path.join(settings.BASE_DIR, 'saved_states', 'best_accuracy.json')
-    all_best = {}  # Default empty dict
-    
-    if os.path.exists(best_file):
-        try:
-            with open(best_file, 'r') as f:
-                all_best = json.load(f) or {}
-        except Exception as e:
-            print(f"Error reading best accuracy file: {e}")
-
-    # Get current best for this stock (or default 0)
-    stock_best = all_best.get(stock_symbol, {"best_accuracy": 0.0, "best_balanced": 0.0})
-    best_acc_current = stock_best["best_accuracy"]
-    best_bal_current = stock_best["best_balanced"]
-
-    if (acc * 100) > best_acc_current:
-        print(f"New best accuracy for {stock_symbol}: {acc*100:.4f}% (previous: {best_acc_current:.4f}%) → Saving new model")
-        # Update this stock's best
-        all_best[stock_symbol] = {
-            "best_accuracy": round(acc * 100, 4),
-            "best_balanced": round(bal_acc * 100, 4)
-        }
-        # Save entire dict back
-        with open(best_file, 'w') as f:
-            json.dump(all_best, f, indent=4)
-    else:
-        print(f"Accuracy for {stock_symbol}: {acc*100:.4f}% ≤ previous best {best_acc_current:.4f}% → Skipping save (keeping old model)")
-        return {
-            "status": "skip",
-            "message": f"New accuracy ({acc*100:.4f}%) not better than best ({best_acc_current:.4f}%). Keeping previous model for {stock_symbol}."
-        }
-    
-    # 12. Feature Importance
+    # Feature Importance
     importances = rf_model.feature_importances_.reshape(SEQ_LEN, len(FEATURES)).mean(axis=0)
     fi_df = pd.DataFrame({'Feature': FEATURES, 'Importance': importances}).sort_values('Importance', ascending=False)
     
-    # 13. Backtest
+    # Backtest
     prices_test = df_final['Close'].values[-len(y_test):]
     backtest_metrics, equity = backtest_long_only(prices_test, ensemble_pred)
     
-    # 14. Save Backtest Results
+    # Save Backtest Results (Excel backup)
     backtest_df = pd.DataFrame({
         'Date': df_final.index[-len(y_test):],
         'Close': prices_test,
         'Ensemble_Pred': ensemble_pred
     })
     
-    print("Generating backtest results ")
-
     backtest_path = os.path.join(settings.BASE_DIR, 'saved_states', f'{stock_symbol}_backtest_results.xlsx')
     with pd.ExcelWriter(backtest_path, engine='openpyxl') as writer:
         backtest_df.to_excel(writer, index=False, sheet_name='Backtest_Results')
@@ -372,32 +419,29 @@ def run_prediction_pipeline(stock_symbol='NABIL'):
             'Metric': ['Accuracy', 'Balanced Accuracy'],
             'Value': [acc, bal_acc]
         }).to_excel(writer, index=False, sheet_name='Metrics')
-        pd.DataFrame(cm, index=['SELL', 'BUY'], columns=['Pred SELL', 'Pred BUY']).to_excel(writer, sheet_name='Confusion_Matrix')
-        fi_df.to_excel(writer, index=False, sheet_name='Feature_Importance')
-        pd.DataFrame({
-            'Metric': list(backtest_metrics.keys()),
-            'Value': list(backtest_metrics.values())
-        }).to_excel(writer, index=False, sheet_name='Backtest_Metrics')
-        pd.DataFrame({
-            'Date': backtest_df['Date'].values,
-            'Equity': np.concatenate(([1], equity))
-        }).to_excel(writer, index=False, sheet_name='Equity_Curve')
+        
+    print("Generating future predictions")
     
-
-    print("Generating future predictions ")
-    # 15. Future Predictions
+    # 12. Future Predictions
     X_future = build_future_tabular_inputs(df_final, FEATURES, scaler, seq_length=SEQ_LEN, future_days=30)
     lstm_future_p = model.predict(X_future, verbose=0).flatten()
     xgb_future_p = xgb_model.predict_proba(X_future.reshape(len(X_future), -1))[:, 1]
     rf_future_p = rf_model.predict_proba(X_future.reshape(len(X_future), -1))[:, 1]
+    
     future_score = w_lstm * lstm_future_p + w_xgb * xgb_future_p + w_rf * rf_future_p
     future_signal = np.where(future_score > 0.55, 'BUY', 'SELL')
     future_dates = pd.date_range(start=df_final.index[-1] + pd.Timedelta(days=1), periods=30, freq='B')
+    
     forecast_df = pd.DataFrame({
         'Forecast_Date': future_dates,
         'Signal': future_signal,
         'Score': future_score
     })
+    
+    # Save Forecasts to DB
+    saved_count = save_forecast_to_db(stock_symbol, forecast_df)
+    
+    # Also save to Excel as artifact
     forecast_path = os.path.join(settings.BASE_DIR, 'saved_states', f'{stock_symbol}_future_30_day_forecast.xlsx')
     forecast_df.to_excel(forecast_path, index=False, sheet_name='Forecast')
     
@@ -425,7 +469,7 @@ def run_prediction_pipeline(stock_symbol='NABIL'):
     ax.invert_yaxis()
     fi_url = save_plot(fig, 'feature_importance.png')
 
-    # 3. Buy/Sell Signals on Test Period
+    # 3. Buy/Sell Signals
     fig, ax = plt.subplots(figsize=(12, 6))
     prices_test = df_final['Close'].values[-len(y_test):]
     ax.plot(df_final.index[-len(y_test):], prices_test, label='Price (Test Period)', color='blue', alpha=0.8)
@@ -446,7 +490,7 @@ def run_prediction_pipeline(stock_symbol='NABIL'):
     ax.set_ylabel('Equity Growth')
     equity_url = save_plot(fig, 'equity_curve.png')
 
-    print(f"Pipeline Complete for {stock_symbol}. Files and images saved.")
+    print(f"Pipeline Complete for {stock_symbol}. Saved {saved_count} forecasts to DB.")
     return {
         "status": "success",
         "confusion_image": confusion_url,
