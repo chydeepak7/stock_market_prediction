@@ -1,91 +1,114 @@
 import matplotlib
 matplotlib.use('Agg')  # Use non-interactive backend (perfect for servers)
 
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, HttpResponse
+from django.conf import settings
+from django.contrib import messages
+from django.template.loader import render_to_string
+from matplotlib.figure import Figure
 import os
-import matplotlib.pyplot as plt
 import io
 import base64
 import pandas as pd
-import seaborn as sns
-import plotly.express as px
-from plotly.offline import plot
-import joblib
-import xgboost as xgb
-from tensorflow.keras.models import load_model
-from django.conf import settings
-from django.http import HttpResponse 
-from django.template.loader import render_to_string
-from django import forms
 import numpy as np
-from sklearn.metrics import mean_absolute_error, mean_squared_error
-# Create your views here.
+from .services import run_prediction_pipeline
 
+# --- Helper Functions ---
 
+def generate_chart_image(df, chart_type='backtest'):
+    """
+    Generates a base64 PNG chart from a DataFrame using Object-Oriented Matplotlib.
+    chart_type: 'backtest' or 'forecast'
+    """
+    fig = Figure(figsize=(12, 6))
+    ax = fig.subplots()
+    
+    if chart_type == 'backtest':
+        ax.plot(df.index, df['Real_Market_Price'], 
+                 label='Real Market Price', color='black', alpha=0.8, linewidth=2)
+        ax.plot(df.index, df['Hybrid_Prediction'], 
+                 label='Hybrid Prediction', color='orange', linewidth=3)
+        ax.set_title('Backtest: Real vs Hybrid Prediction', fontsize=16)
+    
+    elif chart_type == 'forecast':
+        ax.plot(df.index, df['Predicted_Close_Price'], 
+                 label='Predicted Close Price', color='green', linewidth=3)
+        ax.set_title('30-Day Future Price Forecast', fontsize=16)
+    
+    else:
+        return None
 
-def backtest_view(request):
-    context = {}
-    # Path to the Excel file
-    file_path = os.path.join(settings.BASE_DIR, 'saved_states', 'backtest_results.xlsx')
-    df = pd.read_excel(file_path)
-    df.set_index('Date', inplace=True)
-    plt.plot(df.index, df['Real_Market_Price'], label='Real Market Price', color='black', alpha=0.7)
-    plt.plot(df.index, df['Hybrid_Prediction'], label='Hybrid Prediction', color='orange', linewidth=2)
-    plt.title('Backtest Results: Real vs Hybrid', fontsize=16)
-    plt.xlabel('Date')
-    plt.ylabel('Price')
-    plt.legend()
-    plt.grid(True, alpha=0.3)
-    plt.tight_layout()
+    ax.set_xlabel('Date')
+    ax.set_ylabel('Price (NPR)')
+    ax.legend()
+    ax.grid(True, alpha=0.3)
+    fig.tight_layout()
+
     buf = io.BytesIO()
-    plt.savefig(buf, format='png')
+    fig.savefig(buf, format='png', dpi=150)
     buf.seek(0)
     image_base64 = base64.b64encode(buf.read()).decode('utf-8')
     buf.close()
-    plt.close()
-    context = {
-        'chart_image': f"data:image/png;base64,{image_base64}"
-    }
+    
+    return f"data:image/png;base64,{image_base64}"
+
+# --- Views ---
+
+def backtest_view(request):
+    stock = request.GET.get('stock', 'NABIL') # Default or get from request if needed
+    # Note: The original code hardcoded the filename. 
+    # Logic suggests we might want to respect the stock symbol if possible, 
+    # but sticking to previous behavior for the specific 'backtest_results.xlsx' file 
+    # if it was intended to be global, OR improving it to be dynamic.
+    # Given the other views use f'{stock}_...', let's assume valid paths are mostly dynamic 
+    # but the original code pointed to a specific file. 
+    # I will keep the original file path behavior but cleaner.
+    
+    # Original behavior was: file_path = os.path.join(settings.BASE_DIR, 'saved_states', 'backtest_results.xlsx')
+    # If the user wants specific stock backtests, they should probably be routed differently, 
+    # but for this specific view function refactor, I will maintain the file path logic 
+    # OR update it to be generic if that file strictly exists.
+    
+    # Let's use the generic file path from the original code for safety, 
+    # but ideally this should be dynamic like home_view.
+    file_path = os.path.join(settings.BASE_DIR, 'saved_states', 'backtest_results.xlsx')
+    
+    context = {}
+    if os.path.exists(file_path):
+        try:
+            df = pd.read_excel(file_path)
+            if 'Date' in df.columns:
+                df.set_index('Date', inplace=True)
             
-            
-  
+            chart_image = generate_chart_image(df, chart_type='backtest')
+            context['chart_image'] = chart_image
+        except Exception as e:
+            messages.error(request, f"Error generating backtest chart: {str(e)}")
+    else:
+        # Fallback or empty state
+        pass
+
     return render(request, 'app/app.html', context)
-
-
-
 
 
 def forecast_view(request):
-    context = {}
-    # Path to the Excel file
+    # Similar logic for forecast
     file_path = os.path.join(settings.BASE_DIR, 'saved_states', 'future_30_day_forecast.xlsx')
-    df = pd.read_excel(file_path)
-    df.set_index('Forecast_Date', inplace=True)
-    plt.plot(df.index, df['Predicted_Close_Price'], label='Prediction', color='orange', linewidth=2)
-    plt.title('Backtest Results: Real vs Hybrid', fontsize=16)
-    plt.xlabel('Date')
-    plt.ylabel('Price')
-    plt.legend()
-    plt.grid(True, alpha=0.3)
-    plt.tight_layout()
-    buf = io.BytesIO()
-    plt.savefig(buf, format='png')
-    buf.seek(0)
-    image_base64 = base64.b64encode(buf.read()).decode('utf-8')
-    buf.close()
-    plt.close()
-    context = {
-        'chart_image': f"data:image/png;base64,{image_base64}"
-    }
+    
+    context = {}
+    if os.path.exists(file_path):
+        try:
+            df = pd.read_excel(file_path)
+            if 'Forecast_Date' in df.columns:
+                df.set_index('Forecast_Date', inplace=True)
             
+            chart_image = generate_chart_image(df, chart_type='forecast')
+            context['chart_image'] = chart_image
+        except Exception as e:
+            messages.error(request, f"Error generating forecast chart: {str(e)}")
             
-  
     return render(request, 'app/app.html', context)
 
-
-from django.shortcuts import render
-from django.contrib import messages
-from .services import run_prediction_pipeline # Import the function we just made
 
 def home_view(request):
     stock = request.GET.get('stock', 'CHCL')
@@ -216,40 +239,30 @@ def welcome_view(request):
 
     return render(request, 'app/welcome.html', context)
 
-def generate_chart_image(df, chart_type='backtest'):
+
+def log_view(request):
     """
-    Generates a base64 PNG chart from a DataFrame.
-    chart_type: 'backtest' or 'forecast'
+    View to display pipeline logs for developers.
+    Shows the last N lines of the pipeline.log file.
     """
-    plt.figure(figsize=(12, 6))
+    log_file_path = os.path.join(settings.BASE_DIR, 'saved_states', 'pipeline.log')
+    lines_to_show = int(request.GET.get('lines', 100))
     
-    if chart_type == 'backtest':
-        plt.plot(df.index, df['Real_Market_Price'], 
-                 label='Real Market Price', color='black', alpha=0.8, linewidth=2)
-        plt.plot(df.index, df['Hybrid_Prediction'], 
-                 label='Hybrid Prediction', color='orange', linewidth=3)
-        plt.title('Backtest: Real vs Hybrid Prediction', fontsize=16)
-    
-    elif chart_type == 'forecast':
-        plt.plot(df.index, df['Predicted_Close_Price'], 
-                 label='Predicted Close Price', color='green', linewidth=3)
-        plt.title('30-Day Future Price Forecast', fontsize=16)
-    
+    logs = []
+    if os.path.exists(log_file_path):
+        try:
+            with open(log_file_path, 'r', encoding='utf-8') as f:
+                all_lines = f.readlines()
+                logs = all_lines[-lines_to_show:] if len(all_lines) > lines_to_show else all_lines
+        except Exception as e:
+            logs = [f"Error reading log file: {str(e)}"]
     else:
-        plt.close()
-        return None
-
-    plt.xlabel('Date')
-    plt.ylabel('Price (NPR)')
-    plt.legend()
-    plt.grid(True, alpha=0.3)
-    plt.tight_layout()
-
-    buf = io.BytesIO()
-    plt.savefig(buf, format='png', dpi=150)
-    buf.seek(0)
-    image_base64 = base64.b64encode(buf.read()).decode('utf-8')
-    buf.close()
-    plt.close()
-
-    return f"data:image/png;base64,{image_base64}"
+        logs = ["Log file not found. Run the scraper or training to generate logs."]
+    
+    context = {
+        'logs': logs,
+        'lines_shown': len(logs),
+        'lines_requested': lines_to_show,
+    }
+    
+    return render(request, 'app/log_viewer.html', context)

@@ -1,0 +1,37 @@
+# Environment variables (IMPORTANT: Never commit!)
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+myvenv/
+ENV/
+env/
+
+# Django
+*.log
+local_settings.py
+db.sqlite3
+media/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Local files
+saved_states/pipeline.log
+saved_states/scheduler.log
+*.bat
+
+# Jupyter
+.ipynb_checkpoints/

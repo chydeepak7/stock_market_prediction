@@ -1,0 +1,1 @@
+scraper: python manage.py scrape_daily --fill-gaps

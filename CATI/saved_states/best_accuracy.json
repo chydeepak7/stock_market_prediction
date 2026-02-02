@@ -1,7 +1,7 @@
 {
     "NABIL": {
-        "best_accuracy": 60.8844,
-        "best_balanced": 70.9876
+        "best_accuracy": 67.1769,
+        "best_balanced": 78.7445
     },
     "NTC": {
         "best_accuracy": 57.265,

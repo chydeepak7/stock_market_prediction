@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pipeline Logs - Stock Prediction</title>
+    <style>
+        :root {
+            --bg-dark: #1a1a2e;
+            --bg-card: #16213e;
+            --text-primary: #eaeaea;
+            --text-secondary: #a0a0a0;
+            --accent: #0f3460;
+            --success: #00d26a;
+            --warning: #ffaa00;
+            --error: #ff4444;
+            --info: #4da6ff;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 15px 20px;
+            background: var(--bg-card);
+            border-radius: 10px;
+        }
+        
+        h1 {
+            font-size: 1.5rem;
+            color: var(--text-primary);
+        }
+        
+        .controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        .controls select, .controls button {
+            padding: 8px 15px;
+            border-radius: 5px;
+            border: 1px solid var(--accent);
+            background: var(--accent);
+            color: var(--text-primary);
+            cursor: pointer;
+            font-family: inherit;
+        }
+        
+        .controls button:hover {
+            background: #1a4a80;
+        }
+        
+        .stats {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+        
+        .log-container {
+            background: #0d0d1a;
+            border-radius: 10px;
+            padding: 20px;
+            overflow-x: auto;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        
+        .log-line {
+            padding: 4px 0;
+            border-bottom: 1px solid #222;
+            white-space: pre-wrap;
+            word-break: break-all;
+            font-size: 0.85rem;
+            line-height: 1.5;
+        }
+        
+        .log-line:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+        
+        .log-line.info { color: var(--info); }
+        .log-line.warning { color: var(--warning); }
+        .log-line.error { color: var(--error); }
+        .log-line.success { color: var(--success); }
+        
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-secondary);
+        }
+        
+        @media (max-width: 768px) {
+            header {
+                flex-direction: column;
+                gap: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📊 Pipeline Logs</h1>
+            <div class="controls">
+                <select id="lines-select" onchange="changeLines()">
+                    <option value="50" {% if lines_requested == 50 %}selected{% endif %}>Last 50 lines</option>
+                    <option value="100" {% if lines_requested == 100 %}selected{% endif %}>Last 100 lines</option>
+                    <option value="250" {% if lines_requested == 250 %}selected{% endif %}>Last 250 lines</option>
+                    <option value="500" {% if lines_requested == 500 %}selected{% endif %}>Last 500 lines</option>
+                </select>
+                <button onclick="location.reload()">🔄 Refresh</button>
+            </div>
+            <span class="stats">Showing {{ lines_shown }} lines</span>
+        </header>
+        
+        <div class="log-container">
+            {% if logs %}
+                {% for line in logs %}
+                    <div class="log-line {% if 'ERROR' in line %}error{% elif 'WARNING' in line %}warning{% elif 'SUCCESS' in line or 'completed' in line %}success{% else %}info{% endif %}">{{ line }}</div>
+                {% endfor %}
+            {% else %}
+                <div class="empty-state">
+                    <p>No logs available yet.</p>
+                    <p>Run <code>python manage.py scrape_daily</code> or train a model to generate logs.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <script>
+        function changeLines() {
+            const lines = document.getElementById('lines-select').value;
+            window.location.href = '?lines=' + lines;
+        }
+        
+        // Auto-scroll to bottom
+        const container = document.querySelector('.log-container');
+        container.scrollTop = container.scrollHeight;
+    </script>
+</body>
+</html>
