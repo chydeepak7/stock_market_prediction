@@ -126,9 +126,12 @@ def home_view(request):
             context['ensemble_accuracy'] = dict(metrics_df.set_index('Metric')['Value']).get('Accuracy')
             context['ensemble_balanced_accuracy'] = dict(metrics_df.set_index('Metric')['Value']).get('Balanced Accuracy')
             
-            # Backtest Metrics
-            backtest_metrics_df = pd.read_excel(backtest_path, sheet_name='Backtest_Metrics')
-            context['backtest_metrics'] = dict(zip(backtest_metrics_df['Metric'], backtest_metrics_df['Value']))
+            # Backtest Metrics (stored in same Metrics sheet)
+            all_metrics = dict(zip(metrics_df['Metric'], metrics_df['Value']))
+            context['backtest_metrics'] = {
+                k: v for k, v in all_metrics.items()
+                if k not in ('Accuracy', 'Balanced Accuracy')
+            }
         except Exception as e:
             messages.error(request, f"Error loading backtest data: {str(e)}")
     
@@ -141,7 +144,7 @@ def home_view(request):
                 {
                     'date': row['Forecast_Date'].strftime('%Y-%m-%d'),
                     'signal': row['Signal'],
-                    'score': round(row['Score'], 4)
+                    'score': round(row['Score'], 4) if 'Score' in df_forecast.columns else 0.0
                 } for _, row in df_forecast.iterrows()
             ]
             # Overall Summary
