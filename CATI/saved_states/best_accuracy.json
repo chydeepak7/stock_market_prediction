@@ -2,5 +2,13 @@
     "NABIL": {
         "best_accuracy": 61.5551,
         "best_balanced": 54.0239
+    },
+    "NTC": {
+        "best_accuracy": 45.671,
+        "best_balanced": 51.7483
+    },
+    "GBIME": {
+        "best_accuracy": 54.8128,
+        "best_balanced": 55.837
     }
 }

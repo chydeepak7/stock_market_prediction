@@ -299,15 +299,29 @@ def draw_candlestick_chart(
     return fig
 
 
-def _load_csv(path: str, rename_dict: dict) -> pd.DataFrame:
-    """Load, rename, reverse, and set DatetimeIndex on a CSV file."""
-    df = pd.read_csv(path)
+def _load_data(path: str, rename_dict: dict) -> pd.DataFrame:
+    """Load data from CSV or XLSX, rename, reverse, and set DatetimeIndex."""
+    if path.endswith('.xlsx'):
+        df = pd.read_excel(path)
+    else:
+        df = pd.read_csv(path)
     df.rename(columns=rename_dict, inplace=True)
     df = df.iloc[::-1].reset_index(drop=True)
     df['Date'] = pd.to_datetime(df['Date'])
     df.set_index('Date', inplace=True)
     df.sort_index(inplace=True)
     return df
+
+
+def _resolve_data_path(base_dir: str, filename: str) -> str:
+    """Try CSV first, then XLSX. Returns the path that exists, or None."""
+    csv_path = os.path.join(base_dir, 'saved_states/data', f'{filename}.csv')
+    if os.path.exists(csv_path):
+        return csv_path
+    xlsx_path = os.path.join(base_dir, 'saved_states/data', f'{filename}.xlsx')
+    if os.path.exists(xlsx_path):
+        return xlsx_path
+    return None
 
 
 # ─── MAIN PIPELINE ───────────────────────────────────────────────────────────
@@ -344,15 +358,18 @@ def run_prediction_pipeline(stock_symbol: str = 'NABIL') -> dict:
         'category': 'Category',
     }
 
-    stock_path = os.path.join(settings.BASE_DIR, 'saved_states/data', f'{stock_symbol}.csv')
-    market_path = os.path.join(settings.BASE_DIR, 'saved_states/data', 'NEPSE.csv')
+    stock_path = _resolve_data_path(settings.BASE_DIR, stock_symbol)
+    market_path = _resolve_data_path(settings.BASE_DIR, 'NEPSE')
 
     for path, name in [(stock_path, stock_symbol), (market_path, 'NEPSE')]:
-        if not os.path.exists(path):
-            return {"status": "error", "message": f"{name}.csv not found at {path}"}
+        if path is None:
+            return {
+                "status": "error",
+                "message": f"No data file found for {name} (tried .csv and .xlsx)"
+            }
 
-    df_stock  = _load_csv(stock_path, rename)
-    df_market = _load_csv(market_path, rename)
+    df_stock  = _load_data(stock_path, rename)
+    df_market = _load_data(market_path, rename)
     print(f"[1/9] Data loaded: {len(df_stock)} rows for {stock_symbol}")
 
     # ── 2–3. INDICATORS + LABELS ────────────────────────────────────────
