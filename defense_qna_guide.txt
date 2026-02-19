@@ -1,0 +1,510 @@
+========================================================================
+     BE DEFENSE QnA PREPARATION GUIDE - Stock Market Prediction
+========================================================================
+
+
+========================================================================
+1. PROJECT OVERVIEW QUESTIONS
+========================================================================
+
+Q: "What is your project about? Explain in one sentence."
+
+A: "Our project uses an ensemble of three machine learning models - LSTM,
+XGBoost, and Random Forest - to predict whether a stock's price will go
+up or down over the next 5 trading days, based on 9 technical indicators."
+
+
+Q: "Why did you choose this topic?"
+
+A: "Stock market prediction is a challenging real-world problem that
+combines financial domain knowledge with modern ML techniques. Nepal's
+stock market (NEPSE) is under-explored in ML research, making this both
+academically interesting and practically useful for Nepali investors."
+
+
+Q: "What is the practical use case?"
+
+A: "The system generates daily BUY/SELL signals for Nepali stocks. An
+investor can use these signals as one input in their decision-making -
+not as the sole basis for trading, but as a data-driven complement to
+fundamental analysis."
+
+
+========================================================================
+2. TECHNICAL INDICATORS - What They Are & Why
+========================================================================
+
+Professors WILL ask "What is RSI?" or "Why did you use MACD?" - know
+each one cold.
+
+Q: "What technical indicators did you use and why?"
+
+  RSI (Relative Strength Index)
+    What: Momentum - is the stock overbought (>70) or oversold (<30)?
+    Why:  Identifies potential reversals
+
+  MACD (Moving Average Convergence Divergence)
+    What: Trend direction - difference between 12-day and 26-day EMA
+    Why:  Shows trend changes and momentum shifts
+
+  MACD Signal
+    What: 9-day EMA of MACD
+    Why:  Crossovers with MACD generate buy/sell signals
+
+  EMA20 Ratio
+    What: Price relative to 20-day exponential moving average
+    Why:  Above 1.0 = bullish, below 1.0 = bearish
+
+  Bollinger Band Position
+    What: Where price sits within its volatility envelope
+    Why:  Near 0 = oversold, near 1 = overbought
+
+  ATR (Average True Range)
+    What: Volatility - how much does the price move daily?
+    Why:  High ATR = risky/volatile, low ATR = stable
+
+  OBV (On-Balance Volume)
+    What: Volume momentum - are buyers or sellers in control?
+    Why:  Rising OBV = accumulation, falling = distribution
+
+  VWAP (Volume-Weighted Average Price)
+    What: Fair price based on volume
+    Why:  Price above VWAP = bullish, below = bearish
+
+  Beta
+    What: How much the stock moves relative to NEPSE index
+    Why:  Beta > 1 = more volatile than market
+
+
+Q: "Why only 9 features? Why not more?"
+
+A: "We tested with 16 features (including returns, volume ratio,
+volatility) but accuracy IMPROVED when we focused on only these 9 core
+indicators. More features can actually hurt performance because:
+  1. Curse of dimensionality - with limited data (~400-800 samples),
+     too many features create noise
+  2. Multicollinearity - many indicators are correlated (e.g.,
+     Return_5d and EMA ratio capture similar information)
+  3. Occam's Razor - simpler models generalize better to unseen data"
+
+
+Q: "Why did you normalize/scale the indicators?"
+
+A: "Raw indicators have vastly different scales - RSI ranges 0-100,
+MACD could be -50 to +50, Beta is around 0.5-2.0. Without normalization:
+  - LSTM would be dominated by large-scale features
+  - Gradient descent would be slow and unstable
+
+We used RobustScaler (instead of MinMaxScaler) because it's resistant
+to outliers - it uses median and IQR instead of min/max."
+
+
+Q: "What is RobustScaler? How is it different from MinMaxScaler?"
+
+A:
+  - MinMaxScaler: scales to [0,1] using min and max
+    -> sensitive to outliers (one extreme value distorts everything)
+  - RobustScaler: scales using median and interquartile range (IQR)
+    -> ignores outliers
+
+Stock data often has extreme spikes, so RobustScaler is more appropriate.
+
+
+========================================================================
+3. MODEL ARCHITECTURE QUESTIONS
+========================================================================
+
+Q: "Why did you use LSTM? What is it?"
+
+A: "LSTM (Long Short-Term Memory) is a type of Recurrent Neural Network
+designed to learn patterns in sequential data. Stock prices are
+time-series - today's price depends on yesterday's trends. LSTM has
+three gates:
+  - Forget gate  - decides what past info to discard
+  - Input gate   - decides what new info to store
+  - Output gate  - decides what to output
+
+This lets it capture patterns like 'RSI has been rising for 5 days
+while price is falling' - classic divergence signals that traders use."
+
+
+Q: "Why XGBoost?"
+
+A: "XGBoost (Extreme Gradient Boosting) builds decision trees
+sequentially - each tree corrects the errors of the previous one.
+It excels at:
+  - Learning non-linear relationships between features
+  - Handling mixed feature types
+  - Built-in regularization (prevents overfitting)
+  - Early stopping - we stop training when validation error stops
+    improving"
+
+
+Q: "Why Random Forest?"
+
+A: "Random Forest builds many independent decision trees on random
+subsets of data and features, then averages their predictions. It's:
+  - Naturally resistant to overfitting (bagging reduces variance)
+  - Good at capturing feature importance
+  - Provides probability outputs (not just class predictions)"
+
+
+Q: "Why three models? Why not just one?"
+
+A: "This is called ensemble learning. Each model has different strengths:
+
+  Model           Strength                        Weakness
+  --------------- ------------------------------- ---------------------------
+  LSTM            Captures temporal patterns       Can overfit on small data
+  XGBoost         Learns complex non-linear rules  Doesn't see temporal order
+  Random Forest   Robust, reduces variance         May underfit complex patterns
+
+By combining them through majority voting (BUY only if >=2/3 agree),
+we get predictions that are more robust than any single model."
+
+
+Q: "What is majority voting?"
+
+A: "Each model independently predicts BUY or SELL. The final prediction
+is whatever >=2 out of 3 models agree on. This is like asking 3 experts
+- you go with the majority opinion. It filters out the noise from any
+single model's mistakes."
+
+
+Q: "What is your LSTM architecture?"
+
+A: "A simple, focused architecture:
+  - Input:  20 timesteps x 9 features (20-day lookback window)
+  - LSTM layer: 64 units
+  - BatchNormalization: stabilizes training
+  - Dropout (20%): prevents overfitting by randomly disabling neurons
+  - Dense (32 units, ReLU): learns non-linear combinations
+  - Output (1 unit, sigmoid): probability of BUY (0 to 1)"
+
+
+Q: "What are the hyperparameters? How did you choose them?"
+
+A: "Key hyperparameters and rationale:
+  - SEQ_LEN = 20 (lookback days): 1 month of trading data - enough
+    context without too much noise
+  - LABEL_HORIZON = 5 (prediction days): 1 trading week - short enough
+    to be predictable
+  - LSTM units = 64: enough capacity without overfitting on our
+    dataset size
+  - Dropout = 0.2: standard value, prevents co-adaptation of neurons
+  - Batch size = 32: small enough for gradient diversity, large enough
+    for stable updates
+  - Epochs = 30 with early stopping: prevents overfitting by stopping
+    when validation loss stops improving"
+
+
+========================================================================
+4. DATA HANDLING QUESTIONS
+========================================================================
+
+Q: "How did you split your data?"
+
+A: "We use a 70/15/15 chronological split:
+  - Train (70%): oldest data - model learns from this
+  - Validation (15%): middle data - used for early stopping and
+    hyperparameter decisions
+  - Test (15%): newest data - final accuracy evaluation
+
+CRITICALLY, we never shuffle. In time-series, shuffling would leak
+future information into training data. Our split preserves temporal
+order."
+
+
+Q: "What is data leakage? How did you prevent it?"
+
+A: "Data leakage is when information from the test set accidentally
+influences training. We prevent it by:
+  1. Scaler fit on train only - RobustScaler.fit() is called only on
+     training data, then transform() is applied to val/test
+  2. Chronological split - no shuffling, no future data in training
+  3. Labels are forward-looking - the 5-day label for day X uses prices
+     from days X+1 to X+5, which are never in the training set when
+     predicting day X"
+
+
+Q: "What is class imbalance and how did you handle it?"
+
+A: "In our data, the split between BUY and SELL days isn't perfectly
+50/50. To prevent the model from just predicting the majority class,
+we use:
+  - Sample weights for LSTM: samples from the minority class get higher
+    weight during training
+  - class_weight='balanced' for Random Forest: automatically adjusts
+    weights inversely proportional to class frequency
+  - scale_pos_weight for XGBoost: similar balancing mechanism"
+
+
+Q: "Why do you use sequences of 20 days instead of just today's
+    indicators?"
+
+A: "A single snapshot of RSI=35 could mean many things. But RSI
+dropping from 70 to 35 over 10 days is a clear bearish signal. The
+20-day sequence lets LSTM see:
+  - Trends: indicators rising or falling
+  - Divergences: price going up but RSI going down (a reversal signal)
+  - Patterns: specific shapes that precede moves"
+
+
+========================================================================
+5. TREE MODEL FEATURE AGGREGATION
+========================================================================
+
+Q: "How do tree models use the sequential data?"
+
+A: "Tree models (XGBoost, RF) can't process sequences directly. So we
+aggregate each 20-day sequence into 5 statistics per feature:
+  - Last value: most recent state
+  - Mean: average over the window
+  - Std (standard deviation): volatility of the indicator
+  - Slope: linear trend direction (via polyfit)
+  - Momentum: last minus first value
+
+This gives 9 features x 5 stats = 45 dimensions, preserving temporal
+information in a flat format."
+
+
+========================================================================
+6. EVALUATION & RESULTS
+========================================================================
+
+Q: "What accuracy did you achieve?"
+
+A: "62.64% on the held-out test set for NABIL. For context:
+  - Random guessing = 50%
+  - Our model is 12+ percentage points above random
+  - Professional quantitative trading funds typically operate at
+    55-65% directional accuracy
+  - The Efficient Market Hypothesis suggests stock prices are
+    inherently hard to predict"
+
+
+Q: "What is balanced accuracy? Why do you report it?"
+
+A: "Balanced accuracy = average of recall for each class. Regular
+accuracy can be misleading with imbalanced data. For example, if 70%
+of test days are SELL, a model that always predicts SELL gets 70%
+accuracy but 50% balanced accuracy (it gets 100% SELL recall but 0%
+BUY recall). Balanced accuracy penalizes this bias."
+
+
+Q: "Explain your confusion matrix."
+
+A: (use whatever your actual numbers are, but the concept is):
+
+               Pred SELL  Pred BUY
+    SELL         246        40      <- true SELLs: 86% correctly identified
+    BUY          138        39      <- true BUYs: 22% correctly identified
+
+  - True Positive (BUY->BUY): correctly predicted BUY
+  - True Negative (SELL->SELL): correctly predicted SELL
+  - False Positive (SELL->BUY): wrongly predicted BUY (wasted entry)
+  - False Negative (BUY->SELL): missed a BUY opportunity
+
+
+Q: "What is the Sharpe Ratio?"
+
+A: "Sharpe ratio measures risk-adjusted returns. It's calculated as:
+mean(returns) / std(returns) x sqrt(252). A value >1.0 is excellent,
+>0.5 is good, <0 means the strategy lost money."
+
+
+Q: "What is backtesting?"
+
+A: "Backtesting simulates how the model would have performed if we
+traded based on its signals historically. We use a long-only strategy:
+buy when signal is BUY, hold cash when SELL. This validates whether the
+model's predictions translate into actual profit."
+
+
+========================================================================
+7. TOUGH QUESTIONS & HOW TO HANDLE THEM
+========================================================================
+
+Q: "Can your model actually predict the stock market?"
+
+A: (Be honest - professors respect honesty)
+"No model can predict the stock market with certainty. Markets are
+influenced by unpredictable events like geopolitics, earnings surprises,
+and sentiment shifts. Our model identifies statistical patterns in
+technical indicators that have a slight edge over random - 62.64% vs
+50%. This modest edge is actually consistent with what professional
+quant funds achieve."
+
+
+Q: "Why not use fundamental analysis or sentiment analysis?"
+
+A: "Those are excellent complementary approaches:
+  - Fundamental analysis (P/E ratios, earnings) is hard to automate
+    for NEPSE due to limited data availability
+  - Sentiment analysis (news, social media) would require NLP
+    infrastructure and reliable Nepali-language financial text datasets
+
+These are natural extensions for future work. Our current system focuses
+on technical analysis, which is fully automatable with available OHLCV
+data."
+
+
+Q: "What are the limitations of your system?"
+
+A:
+  1. No guarantee of future performance - past patterns may not repeat
+  2. Data size - some stocks have limited history (~400 rows), limiting
+     model learning
+  3. Technical-only - doesn't account for fundamentals, news, or
+     market sentiment
+  4. NEPSE-specific - the model is trained on Nepali stocks and may
+     not generalize to other markets
+  5. Transaction costs - backtesting doesn't account for broker fees,
+     slippage, or bid-ask spread
+
+
+Q: "What would you do differently if you had more time?"
+
+A:
+  1. Add sentiment analysis from news articles and social media
+  2. Use more training data - fetch longer historical periods
+  3. Implement walk-forward validation - retrain periodically on
+     expanding windows
+  4. Try transformer models (like Temporal Fusion Transformer) -
+     newer architecture designed for time-series
+  5. Add fundamental features - P/E ratio, dividend yield, market cap
+
+
+Q: "Why not use a simpler model like logistic regression?"
+
+A: "We actually tried simpler approaches as baselines. The ensemble of
+LSTM + XGBoost + RF outperforms simpler models because:
+  - LSTM captures temporal dependencies that logistic regression cannot
+  - Tree models handle non-linear interactions between features
+  - Ensemble diversity reduces individual model weaknesses"
+
+
+Q: "Is 62% accuracy useful in practice?"
+
+A: "Yes! In trading, you don't need to be right every time:
+  - If you're right 62% of the time and use proper position sizing,
+    the edge compounds
+  - Professional traders aim for 55-65% win rate with proper risk
+    management
+  - Even a 55% edge, applied consistently, generates significant
+    returns over time"
+
+
+Q: "If I use your system and it says SELL for the week but the price
+    suddenly increases, how is it usable?"
+
+A: "That's exactly right - no prediction system is 100% accurate, and
+ours is no exception. The key insight is that our system is a
+DECISION-SUPPORT TOOL, not a decision-making tool:
+
+  1. Probabilistic Edge, Not Certainty - Our model is right ~63% of the
+     time. Over 100 trades, you'll be right about 63 times and wrong 37
+     times. You WILL lose on individual trades. But over many trades,
+     the edge compounds. This is how casinos and insurance companies
+     work - they lose on individual events but profit over large numbers.
+
+  2. Risk Management - No professional trader follows signals blindly.
+     Our system should be used alongside position sizing and stop-losses.
+     Never invest more than 5% of your portfolio on one signal. This way,
+     even when wrong, losses are small; when right, gains accumulate.
+
+  3. One Input Among Many - A doctor doesn't diagnose from just a blood
+     test. Similarly, our signal is one data point. An investor should
+     also consider news, fundamentals, and their own risk tolerance.
+
+  4. The Alternative Is Worse - Without any analytical tool, investors
+     rely on gut feeling or rumors, which typically perform BELOW 50%.
+     A 63% accurate system, even when occasionally wrong, is a
+     significant improvement over no system at all."
+
+
+========================================================================
+8. FRAMEWORK & DEPLOYMENT QUESTIONS
+========================================================================
+
+Q: "What frameworks/tools did you use?"
+
+  Component        Tool                  Why
+  ---------------- --------------------- ----------------------------------
+  Web Framework    Django                Full-featured Python web framework
+  Deep Learning    TensorFlow/Keras      Industry-standard LSTM
+  Tree Models      XGBoost, scikit-learn Best gradient boosting + RF
+  Data Processing  pandas, numpy         Standard data science stack
+  Visualization    matplotlib, seaborn   Publication-quality plots
+  Scaling          RobustScaler          Outlier-resistant normalization
+
+
+Q: "Why Django? Why not Flask?"
+
+A: "Django provides built-in admin panel, ORM, templating, and security
+features. For a full-featured application with user management and data
+storage, Django's batteries-included approach saves development time."
+
+
+Q: "How does the system work end-to-end?"
+
+A:
+  1. User selects a stock (e.g., NABIL) on the web interface
+  2. Backend loads historical OHLCV data from CSV files
+  3. Pipeline computes 9 technical indicators
+  4. Creates 5-day directional labels
+  5. Builds 20-day sequences across a 70/15/15 chronological split
+  6. Trains LSTM, XGBoost, and Random Forest
+  7. Majority voting generates ensemble predictions
+  8. Results displayed: confusion matrix, buy/sell signals,
+     candlestick chart, 7-day forecast
+
+
+========================================================================
+9. KEY TERMS CHEAT SHEET
+========================================================================
+
+  Term                 Quick Definition
+  -------------------- ------------------------------------------------
+  LSTM                 Neural net that learns patterns in sequences
+  XGBoost              Trees built sequentially, each correcting errors
+  Random Forest        Many independent trees averaged together
+  Ensemble             Combining multiple models for better predictions
+  Majority Voting      Final answer = whatever most models agree on
+  Overfitting          Model memorizes training data, fails on new data
+  Data Leakage         Test info accidentally used during training
+  RobustScaler         Scales features using median/IQR (outlier-safe)
+  Early Stopping       Stop training when val error stops improving
+  Balanced Accuracy    Average recall across all classes
+  Sharpe Ratio         Risk-adjusted return measure
+  Backtesting          Simulating historical strategy performance
+  Dropout              Randomly disabling neurons to prevent overfitting
+  BatchNormalization   Normalizing layer outputs for stable training
+  EMA                  Exponential Moving Average - recent prices more
+  OHLCV                Open, High, Low, Close, Volume - raw price data
+  Sigmoid              Activation function that outputs 0 to 1
+  ReLU                 Activation: max(0, x) - fast, reduces vanishing
+                       gradient problem
+
+
+========================================================================
+10. PRESENTATION TIPS
+========================================================================
+
+  1. Start with the problem - "Stock market prediction is challenging
+     because..."
+  2. Show the pipeline visually - draw the data flow diagram
+  3. Know your numbers - accuracy, balanced accuracy, test set size
+  4. Be honest about limitations - professors LOVE self-awareness
+  5. Have the demo ready - show the actual running system
+  6. Practice explaining the confusion matrix - most common question
+  7. Don't memorize - understand. Professors can tell the difference.
+
+GOLDEN RULE: If you don't know an answer, say "That's an interesting
+question. Based on my understanding, I would approach it by..." -
+NEVER BLUFF.
+
+
+========================================================================
+Good luck on your defense!
+========================================================================

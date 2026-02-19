@@ -156,7 +156,7 @@ def home_view(request):
             else:
                 summary = "Neutral – Hold Position"
                 context['summary_class'] = 'neutral'
-            context['overall_summary'] = f"Overall 30-Day Outlook: {summary}"
+            context['overall_summary'] = f"Overall 7-Day Outlook: {summary}"
         except Exception as e:
             messages.error(request, f"Error loading forecast data: {str(e)}")
     
@@ -233,7 +233,7 @@ def generate_chart_image(df, chart_type='backtest'):
     elif chart_type == 'forecast':
         plt.plot(df.index, df['Predicted_Close_Price'], 
                  label='Predicted Close Price', color='green', linewidth=3)
-        plt.title('30-Day Future Price Forecast', fontsize=16)
+        plt.title('7-Day Future Price Forecast', fontsize=16)
     
     else:
         plt.close()

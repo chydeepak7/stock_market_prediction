@@ -1,0 +1,427 @@
+[2026-02-02 14:12:49] [INFO] [pipeline] [CMD] import_history started. Directory: D:\Home\BE\projects\stock_market_prediction\CATI\saved_states\data
+[2026-02-02 14:13:15] [INFO] [pipeline] [CMD] import_history completed. Total: 3175 imported, 0 skipped
+[2026-02-02 14:14:16] [INFO] [pipeline] [CMD] scrape_daily command started
+[2026-02-02 14:14:16] [INFO] [pipeline] ==================================================
+[2026-02-02 14:14:16] [INFO] [pipeline] [SCRAPER] Starting daily scrape job
+[2026-02-02 14:14:16] [INFO] [pipeline] [SCRAPER] Fetching data from https://www.sharesansar.com/today-share-price
+[2026-02-02 14:14:20] [INFO] [pipeline] [SCRAPER] Scraped 0 records for 2026-02-02
+[2026-02-02 14:14:20] [WARNING] [pipeline] [SCRAPER] No data scraped (market may be closed)
+[2026-02-02 14:14:20] [INFO] [pipeline] [CMD] scrape_daily command completed
+[2026-02-02 14:19:32] [INFO] [pipeline] [CMD] scrape_daily command started
+[2026-02-02 14:19:32] [INFO] [pipeline] ==================================================
+[2026-02-02 14:19:32] [INFO] [pipeline] [SCRAPER] Starting daily scrape job
+[2026-02-02 14:19:32] [INFO] [pipeline] [SCRAPER] Fetching data from https://www.sharesansar.com/today-share-price
+[2026-02-02 14:19:36] [INFO] [pipeline] [SCRAPER] Data date extracted from page: 2026-02-01
+[2026-02-02 14:19:36] [INFO] [pipeline] [SCRAPER] Scraped 0 records for 2026-02-01
+[2026-02-02 14:19:36] [WARNING] [pipeline] [SCRAPER] No data scraped (market may be closed)
+[2026-02-02 14:19:36] [INFO] [pipeline] [CMD] scrape_daily command completed
+[2026-02-02 14:23:02] [INFO] [pipeline] [CMD] scrape_daily command started
+[2026-02-02 14:23:02] [INFO] [pipeline] ==================================================
+[2026-02-02 14:23:02] [INFO] [pipeline] [SCRAPER] Starting daily scrape job
+[2026-02-02 14:23:02] [INFO] [pipeline] [SCRAPER] Fetching data from https://www.sharesansar.com/today-share-price
+[2026-02-02 14:23:06] [INFO] [pipeline] [SCRAPER] Data date extracted from page: 2026-02-01
+[2026-02-02 14:23:06] [INFO] [pipeline] [SCRAPER] Scraped 0 records for 2026-02-01
+[2026-02-02 14:23:06] [WARNING] [pipeline] [SCRAPER] No data scraped (market may be closed)
+[2026-02-02 14:23:06] [INFO] [pipeline] [CMD] scrape_daily command completed
+[2026-02-02 14:25:27] [INFO] [pipeline] [SCRAPER] Fetching data from https://www.sharesansar.com/today-share-price
+[2026-02-02 14:25:31] [INFO] [pipeline] [SCRAPER] Data date extracted from page: 2026-02-01
+[2026-02-02 14:25:31] [INFO] [pipeline] [SCRAPER] Scraped 0 records for 2026-02-01
+[2026-02-02 14:26:51] [INFO] [pipeline] ==================================================
+[2026-02-02 14:26:51] [INFO] [pipeline] [SCRAPER] Starting daily scrape job
+[2026-02-02 14:26:51] [INFO] [pipeline] [SCRAPER] Fetching data from https://www.sharesansar.com/today-share-price
+[2026-02-02 14:26:55] [INFO] [pipeline] [SCRAPER] Data date extracted from page: 2026-02-01
+[2026-02-02 14:26:55] [INFO] [pipeline] [SCRAPER] Scraped 0 records for 2026-02-01
+[2026-02-02 14:26:55] [WARNING] [pipeline] [SCRAPER] No data scraped (market may be closed)
+[2026-02-02 14:28:10] [INFO] [pipeline] [CMD] scrape_daily command started
+[2026-02-02 14:28:10] [INFO] [pipeline] ==================================================
+[2026-02-02 14:28:10] [INFO] [pipeline] [SCRAPER] Starting daily scrape job
+[2026-02-02 14:28:10] [INFO] [pipeline] [SCRAPER] Fetching data from https://www.sharesansar.com/today-share-price
+[2026-02-02 14:28:15] [INFO] [pipeline] [SCRAPER] Data date extracted from page: 2026-02-01
+[2026-02-02 14:28:15] [INFO] [pipeline] [SCRAPER] Scraped 329 records for 2026-02-01
+[2026-02-02 14:28:17] [INFO] [pipeline] [SCRAPER] DB Update: 329 created, 0 already existed
+[2026-02-02 14:28:17] [INFO] [pipeline] [SCRAPER] Job completed: 329 new records, 0 duplicates
+[2026-02-02 14:28:17] [INFO] [pipeline] [CMD] scrape_daily command completed
+[2026-02-02 14:33:00] [INFO] [pipeline] [CMD] scrape_daily command started
+[2026-02-02 14:33:00] [INFO] [pipeline] ==================================================
+[2026-02-02 14:33:00] [INFO] [pipeline] [SCRAPER] Starting scrape job with gap-fill
+[2026-02-02 14:33:00] [INFO] [pipeline] [SCRAPER] Fetching data from https://www.sharesansar.com/today-share-price
+[2026-02-02 14:33:06] [INFO] [pipeline] [SCRAPER] Data date extracted from page: 2026-02-01
+[2026-02-02 14:33:06] [INFO] [pipeline] [SCRAPER] Scraped 329 records for 2026-02-01
+[2026-02-02 14:33:06] [INFO] [pipeline] [SCRAPER] DB Update: 0 created, 329 already existed
+[2026-02-02 14:33:06] [INFO] [pipeline] [SCRAPER] Today's data: 0 new, 329 existing
+[2026-02-02 14:33:06] [INFO] [pipeline] [SCRAPER] Last recorded date in DB: 2026-02-01
+[2026-02-02 14:33:06] [INFO] [pipeline] [SCRAPER] Filling gap for 2026-02-02
+[2026-02-02 14:33:06] [INFO] [pipeline] [SCRAPER] Fetching historical data for 2026-02-02
+[2026-02-02 14:33:09] [WARNING] [pipeline] [SCRAPER] Requested 2026-02-02 but got 2026-02-01
+[2026-02-02 14:33:09] [INFO] [pipeline] [SCRAPER] Scraped 329 records for 2026-02-01
+[2026-02-02 14:33:09] [INFO] [pipeline] [SCRAPER] DB Update: 0 created, 329 already existed
+[2026-02-02 14:33:09] [INFO] [pipeline] [SCRAPER] Gap-fill complete: 1 gaps processed
+[2026-02-02 14:33:09] [INFO] [pipeline] [SCRAPER] Total: 0 new records, 658 duplicates
+[2026-02-02 14:33:09] [INFO] [pipeline] [CMD] scrape_daily command completed
+[2026-02-02 14:35:58] [INFO] [pipeline] [CMD] scrape_daily command started
+[2026-02-02 14:35:58] [INFO] [pipeline] ==================================================
+[2026-02-02 14:35:58] [INFO] [pipeline] [SCRAPER] Starting scrape job with gap-fill
+[2026-02-02 14:35:58] [INFO] [pipeline] [SCRAPER] Fetching data from https://www.sharesansar.com/today-share-price
+[2026-02-02 14:36:03] [INFO] [pipeline] [SCRAPER] Data date extracted from page: 2026-02-01
+[2026-02-02 14:36:03] [INFO] [pipeline] [SCRAPER] Scraped 329 records for 2026-02-01
+[2026-02-02 14:36:04] [INFO] [pipeline] [SCRAPER] DB Update: 0 created, 329 already existed
+[2026-02-02 14:36:04] [INFO] [pipeline] [SCRAPER] Today's data: 0 new, 329 existing
+[2026-02-02 14:36:04] [INFO] [pipeline] [SCRAPER] Last recorded date in DB: 2026-02-01
+[2026-02-02 14:36:04] [INFO] [pipeline] [SCRAPER] Filling gap for 2026-02-02
+[2026-02-02 14:36:04] [INFO] [pipeline] [SCRAPER] Fetching historical data for 2026-02-02
+[2026-02-02 14:36:06] [WARNING] [pipeline] [SCRAPER] Requested 2026-02-02 but got 2026-02-01
+[2026-02-02 14:36:06] [INFO] [pipeline] [SCRAPER] Scraped 329 records for 2026-02-01
+[2026-02-02 14:36:07] [INFO] [pipeline] [SCRAPER] DB Update: 0 created, 329 already existed
+[2026-02-02 14:36:07] [INFO] [pipeline] [SCRAPER] Gap-fill complete: 1 gaps processed
+[2026-02-02 14:36:07] [INFO] [pipeline] [SCRAPER] Total: 0 new records, 658 duplicates
+[2026-02-02 14:36:07] [INFO] [pipeline] [CMD] scrape_daily command completed
+[2026-02-02 14:46:16] [INFO] [pipeline] [CMD] scrape_daily command started
+[2026-02-02 14:46:16] [INFO] [pipeline] ==================================================
+[2026-02-02 14:46:16] [INFO] [pipeline] [SCRAPER] Starting scrape job with gap-fill
+[2026-02-02 14:46:16] [INFO] [pipeline] [SCRAPER] Fetching data from https://www.sharesansar.com/today-share-price
+[2026-02-02 14:46:20] [INFO] [pipeline] [SCRAPER] Data date extracted from page: 2026-02-01
+[2026-02-02 14:46:20] [INFO] [pipeline] [SCRAPER] Scraped 329 records for 2026-02-01
+[2026-02-02 14:48:41] [INFO] [pipeline] [SCRAPER] DB Update: 329 created, 0 already existed
+[2026-02-02 14:48:41] [INFO] [pipeline] [SCRAPER] Today's data: 329 new, 0 existing
+[2026-02-02 14:48:41] [INFO] [pipeline] [SCRAPER] Last recorded date in DB: 2026-02-01
+[2026-02-02 14:48:42] [INFO] [pipeline] [SCRAPER] Filling gap for 2026-02-02
+[2026-02-02 14:48:42] [INFO] [pipeline] [SCRAPER] Fetching historical data for 2026-02-02
+[2026-02-02 14:48:45] [WARNING] [pipeline] [SCRAPER] Requested 2026-02-02 but got 2026-02-01
+[2026-02-02 14:48:45] [INFO] [pipeline] [SCRAPER] Scraped 329 records for 2026-02-01
+[2026-02-02 14:49:21] [INFO] [pipeline] [SCRAPER] DB Update: 0 created, 329 already existed
+[2026-02-02 14:49:21] [INFO] [pipeline] [SCRAPER] Gap-fill complete: 1 gaps processed
+[2026-02-02 14:49:21] [INFO] [pipeline] [SCRAPER] Total: 329 new records, 329 duplicates
+[2026-02-02 14:49:21] [INFO] [pipeline] [CMD] scrape_daily command completed
+[2026-02-02 15:22:28] [INFO] [pipeline] [CMD] import_history started for 19 files...
+[2026-02-02 15:22:29] [WARNING] [pipeline] [CMD] Skipping D:\Home\BE\projects\stock_market_prediction\CATI\saved_states\data\ADBL.csv: missing required columns
+[2026-02-02 15:23:17] [INFO] [pipeline] [CMD] import_history started for 19 files...
+[2026-02-02 15:26:15] [INFO] [pipeline] [CMD] import_history started for 19 files...
+[2026-02-02 15:33:10] [INFO] [pipeline] [CMD] import_history started for 1 files...
+[2026-02-02 15:34:37] [WARNING] [pipeline] [CMD] Skipping D:\Home\BE\projects\stock_market_prediction\CATI\saved_states\data\EBL.csv: missing required columns
+[2026-02-02 15:34:39] [WARNING] [pipeline] [CMD] Skipping D:\Home\BE\projects\stock_market_prediction\CATI\saved_states\data\HIDCL.csv: missing required columns
+[2026-02-02 15:34:40] [WARNING] [pipeline] [CMD] Skipping D:\Home\BE\projects\stock_market_prediction\CATI\saved_states\data\MNBBL.csv: missing required columns
+[2026-02-02 15:34:43] [WARNING] [pipeline] [CMD] Skipping D:\Home\BE\projects\stock_market_prediction\CATI\saved_states\data\NICA.csv: missing required columns
+[2026-02-02 15:34:43] [WARNING] [pipeline] [CMD] Skipping D:\Home\BE\projects\stock_market_prediction\CATI\saved_states\data\NIFRA.csv: missing required columns
+[2026-02-02 15:34:43] [WARNING] [pipeline] [CMD] Skipping D:\Home\BE\projects\stock_market_prediction\CATI\saved_states\data\NMB.csv: missing required columns
+[2026-02-02 15:34:43] [WARNING] [pipeline] [CMD] Skipping D:\Home\BE\projects\stock_market_prediction\CATI\saved_states\data\NRIC.csv: missing required columns
+[2026-02-02 15:34:46] [WARNING] [pipeline] [CMD] Skipping D:\Home\BE\projects\stock_market_prediction\CATI\saved_states\data\PCBL.csv: missing required columns
+[2026-02-02 15:34:46] [WARNING] [pipeline] [CMD] Skipping D:\Home\BE\projects\stock_market_prediction\CATI\saved_states\data\PRVU.csv: missing required columns
+[2026-02-02 15:34:46] [WARNING] [pipeline] [CMD] Skipping D:\Home\BE\projects\stock_market_prediction\CATI\saved_states\data\SANIMA.csv: missing required columns
+[2026-02-02 15:34:46] [WARNING] [pipeline] [CMD] Skipping D:\Home\BE\projects\stock_market_prediction\CATI\saved_states\data\SBI.csv: missing required columns
+[2026-02-02 15:34:46] [WARNING] [pipeline] [CMD] Skipping D:\Home\BE\projects\stock_market_prediction\CATI\saved_states\data\SCB.csv: missing required columns
+[2026-02-02 15:34:46] [INFO] [pipeline] [CMD] import_history completed. Total: 560 imported, 14835 skipped
+[2026-02-02 15:36:33] [INFO] [pipeline] [CMD] import_history completed. Total: 228 imported, 15180 skipped
+[2026-02-02 15:36:41] [INFO] [pipeline] [CMD] import_history completed. Total: 256 imported, 6158 skipped
+[2026-02-02 15:36:47] [INFO] [pipeline] [CMD] import_history completed. Total: 688 imported, 14720 skipped
+[2026-02-02 15:38:28] [INFO] [pipeline] [SERVICES] Loading NABIL from database (1 records)
+[2026-02-02 15:38:29] [INFO] [pipeline] [SERVICES] Loading NEPSE from database (256 records)
+[2026-02-02 15:45:01] [INFO] [pipeline] [CMD] import_history started for 1 files...
+[2026-02-02 15:46:33] [INFO] [pipeline] [SERVICES] Loading NABIL from database (168 records)
+[2026-02-02 15:46:34] [INFO] [pipeline] [SERVICES] Loading NEPSE from database (256 records)
+[2026-02-02 15:47:52] [INFO] [pipeline] [CMD] import_history started for 1 files...
+[2026-02-02 15:50:18] [INFO] [pipeline] [CMD] import_history completed. Total: 3175 imported, 0 skipped
+[2026-02-02 15:50:30] [INFO] [pipeline] [SERVICES] Loading NABIL from database (3176 records)
+[2026-02-02 15:50:31] [INFO] [pipeline] [SERVICES] Loading NEPSE from database (256 records)
+[2026-02-02 15:51:41] [INFO] [pipeline] [SERVICES] Loading NABIL from database (3176 records)
+[2026-02-02 15:51:42] [INFO] [pipeline] [SERVICES] Loading NEPSE from database (256 records)
+[2026-02-02 15:52:08] [INFO] [pipeline] [SERVICES] Created model metadata for NABIL: acc=38.03%
+[2026-02-02 15:52:13] [INFO] [pipeline] [SERVICES] Saved 30 forecasts for NABIL to database
+[2026-02-02 15:53:28] [INFO] [pipeline] [CMD] import_history completed. Total: 584 imported, 2591 skipped
+[2026-02-02 15:56:15] [INFO] [pipeline] [CMD] import_history started for 1 files...
+[2026-02-02 15:56:20] [INFO] [pipeline] [CMD] import_history completed. Total: 3175 imported, 0 skipped
+[2026-02-02 15:56:20] [INFO] [pipeline] [CMD] import_history started for 1 files...
+[2026-02-02 15:56:24] [INFO] [pipeline] [CMD] import_history completed. Total: 3166 imported, 0 skipped
+[2026-02-02 15:56:24] [INFO] [pipeline] [CMD] import_history started for 1 files...
+[2026-02-02 15:56:27] [INFO] [pipeline] [CMD] import_history completed. Total: 2852 imported, 0 skipped
+[2026-02-02 15:56:27] [INFO] [pipeline] [CMD] import_history started for 1 files...
+[2026-02-02 15:56:30] [INFO] [pipeline] [CMD] import_history completed. Total: 2582 imported, 0 skipped
+[2026-02-02 15:56:30] [INFO] [pipeline] [CMD] import_history started for 1 files...
+[2026-02-02 15:56:31] [INFO] [pipeline] [CMD] import_history completed. Total: 439 imported, 0 skipped
+[2026-02-02 15:56:31] [INFO] [pipeline] [CMD] import_history started for 1 files...
+[2026-02-02 15:56:35] [INFO] [pipeline] [CMD] import_history completed. Total: 3181 imported, 0 skipped
+[2026-02-02 15:56:35] [INFO] [pipeline] [CMD] import_history started for 1 files...
+[2026-02-02 15:56:42] [INFO] [pipeline] [CMD] import_history completed. Total: 6414 imported, 0 skipped
+[2026-02-02 15:56:43] [INFO] [pipeline] [SERVICES] Loading NABIL from database (3176 records)
+[2026-02-02 15:56:44] [INFO] [pipeline] [SERVICES] Loading NEPSE from database (6414 records)
+[2026-02-02 15:57:02] [INFO] [pipeline] [SERVICES] Updated model metadata for NABIL: acc=39.05%
+[2026-02-02 15:57:04] [INFO] [pipeline] [SERVICES] Saved 30 forecasts for NABIL to database
+[2026-02-02 15:57:08] [INFO] [pipeline] [SERVICES] Loading NTC from database (3167 records)
+[2026-02-02 15:57:11] [INFO] [pipeline] [SERVICES] Loading NEPSE from database (6414 records)
+[2026-02-02 15:57:28] [INFO] [pipeline] [SERVICES] Created model metadata for NTC: acc=65.70%
+[2026-02-02 15:57:29] [INFO] [pipeline] [SERVICES] Saved 30 forecasts for NTC to database
+[2026-02-02 15:57:31] [INFO] [pipeline] [SERVICES] Loading CIT from database (2853 records)
+[2026-02-02 15:57:32] [INFO] [pipeline] [SERVICES] Loading NEPSE from database (6414 records)
+[2026-02-02 15:57:52] [INFO] [pipeline] [SERVICES] Created model metadata for CIT: acc=67.36%
+[2026-02-02 15:57:53] [INFO] [pipeline] [SERVICES] Saved 30 forecasts for CIT to database
+[2026-02-02 15:57:55] [INFO] [pipeline] [SERVICES] Loading GBIME from database (2583 records)
+[2026-02-02 15:57:56] [INFO] [pipeline] [SERVICES] Loading NEPSE from database (6414 records)
+[2026-02-02 15:58:09] [INFO] [pipeline] [SERVICES] Created model metadata for GBIME: acc=53.21%
+[2026-02-02 15:58:10] [INFO] [pipeline] [SERVICES] Saved 30 forecasts for GBIME to database
+[2026-02-02 15:58:12] [INFO] [pipeline] [SERVICES] Loading HRL from database (440 records)
+[2026-02-02 15:58:13] [INFO] [pipeline] [SERVICES] Loading NEPSE from database (6414 records)
+[2026-02-02 15:58:21] [INFO] [pipeline] [SERVICES] Created model metadata for HRL: acc=71.88%
+[2026-02-02 15:58:22] [INFO] [pipeline] [SERVICES] Saved 30 forecasts for HRL to database
+[2026-02-02 15:58:23] [INFO] [pipeline] [SERVICES] Loading CHCL from database (3182 records)
+[2026-02-02 15:58:25] [INFO] [pipeline] [SERVICES] Loading NEPSE from database (6414 records)
+[2026-02-02 15:58:41] [INFO] [pipeline] [SERVICES] Created model metadata for CHCL: acc=55.67%
+[2026-02-02 15:58:42] [INFO] [pipeline] [SERVICES] Saved 30 forecasts for CHCL to database
+[2026-02-02 16:48:07] [INFO] [pipeline] [SERVICES] Loading NABIL from database (3176 records)
+[2026-02-02 16:48:08] [INFO] [pipeline] [SERVICES] Loading NEPSE from database (6414 records)
+[2026-02-02 16:54:35] [INFO] [pipeline] [SERVICES] Loading NABIL from database (3176 records)
+[2026-02-02 16:54:35] [INFO] [pipeline] [SERVICES] Loading NEPSE from database (6414 records)
+[2026-02-02 16:54:39] [INFO] [pipeline] [SERVICES] Loading NABIL from database (3176 records)
+[2026-02-02 16:54:39] [INFO] [pipeline] [SERVICES] Loading NEPSE from database (6414 records)
+[2026-02-02 16:55:19] [INFO] [pipeline] [SERVICES] Updated model metadata for NABIL: acc=41.94%
+[2026-02-02 16:55:21] [INFO] [pipeline] [SERVICES] Saved 30 forecasts for NABIL to database
+[2026-02-02 16:55:26] [INFO] [pipeline] [SERVICES] Updated model metadata for NABIL: acc=44.99%
+[2026-02-02 16:55:28] [INFO] [pipeline] [SERVICES] Saved 30 forecasts for NABIL to database
+[2026-02-02 17:44:57] [INFO] [pipeline] [SERVICES] Loading NABIL from database (3176 records)
+[2026-02-02 17:44:57] [INFO] [pipeline] [SERVICES] Loading NEPSE from database (6414 records)
+[2026-02-02 17:45:30] [INFO] [pipeline] [SERVICES] Updated model metadata for NABIL: acc=43.29%
+[2026-02-02 17:45:32] [INFO] [pipeline] [SERVICES] Saved 30 forecasts for NABIL to database
+[2026-02-02 17:49:40] [INFO] [pipeline] ==================================================
+[2026-02-02 17:49:40] [INFO] [pipeline] [SCRAPER] Starting scrape job with gap-fill
+[2026-02-02 17:49:40] [INFO] [pipeline] [SCRAPER] Fetching data from https://www.sharesansar.com/today-share-price
+[2026-02-02 17:49:45] [INFO] [pipeline] [SCRAPER] Data date extracted from page: 2026-02-02
+[2026-02-02 17:49:45] [INFO] [pipeline] [SCRAPER] Scraped 330 records for 2026-02-02
+[2026-02-02 17:55:16] [INFO] [pipeline] [SCRAPER] Fetching historical data for 2025-12-12
+[2026-02-02 17:55:22] [WARNING] [pipeline] [SCRAPER] Requested 2025-12-12 but got 2026-02-02
+[2026-02-02 17:55:22] [INFO] [pipeline] [SCRAPER] Scraped 330 records for 2026-02-02
+[2026-02-02 17:56:33] [INFO] [pipeline] [SCRAPER] DB Update: 166 created, 164 already existed
+[2026-02-02 17:56:34] [INFO] [pipeline] [SCRAPER] Fetching historical data for 2025-12-15
+[2026-02-02 17:56:39] [WARNING] [pipeline] [SCRAPER] Requested 2025-12-15 but got 2026-02-02
+[2026-02-02 17:56:39] [INFO] [pipeline] [SCRAPER] Scraped 330 records for 2026-02-02
+[2026-02-02 17:57:07] [INFO] [pipeline] [SCRAPER] DB Update: 0 created, 330 already existed
+[2026-02-02 17:57:08] [INFO] [pipeline] [SCRAPER] Fetching historical data for 2025-12-16
+[2026-02-02 17:57:11] [WARNING] [pipeline] [SCRAPER] Requested 2025-12-16 but got 2026-02-02
+[2026-02-02 17:57:11] [INFO] [pipeline] [SCRAPER] Scraped 330 records for 2026-02-02
+[2026-02-02 17:57:41] [INFO] [pipeline] [SCRAPER] Fetching historical data for 2025-12-17
+[2026-02-02 17:57:43] [WARNING] [pipeline] [SCRAPER] Requested 2025-12-17 but got 2026-02-02
+[2026-02-02 17:57:44] [INFO] [pipeline] [SCRAPER] Scraped 330 records for 2026-02-02
+[2026-02-02 17:57:45] [INFO] [pipeline] [SCRAPER] Fetching historical data for 2025-12-18
+[2026-02-02 17:57:48] [WARNING] [pipeline] [SCRAPER] Requested 2025-12-18 but got 2026-02-02
+[2026-02-02 17:57:48] [INFO] [pipeline] [SCRAPER] Scraped 330 records for 2026-02-02
+[2026-02-02 17:57:49] [INFO] [pipeline] [SCRAPER] Fetching historical data for 2025-12-19
+[2026-02-02 17:57:52] [WARNING] [pipeline] [SCRAPER] Requested 2025-12-19 but got 2026-02-02
+[2026-02-02 17:57:52] [INFO] [pipeline] [SCRAPER] Scraped 330 records for 2026-02-02
+[2026-02-02 17:57:54] [INFO] [pipeline] [SCRAPER] Fetching historical data for 2025-12-22
+[2026-02-02 17:57:57] [WARNING] [pipeline] [SCRAPER] Requested 2025-12-22 but got 2026-02-02
+[2026-02-02 17:57:57] [INFO] [pipeline] [SCRAPER] Scraped 330 records for 2026-02-02
+[2026-02-02 17:57:59] [INFO] [pipeline] [SCRAPER] Fetching historical data for 2025-12-23
+[2026-02-02 17:58:03] [WARNING] [pipeline] [SCRAPER] Requested 2025-12-23 but got 2026-02-02
+[2026-02-02 17:58:03] [INFO] [pipeline] [SCRAPER] Scraped 330 records for 2026-02-02
+[2026-02-02 17:58:04] [INFO] [pipeline] [SCRAPER] Fetching historical data for 2025-12-24
+[2026-02-02 17:58:08] [WARNING] [pipeline] [SCRAPER] Requested 2025-12-24 but got 2026-02-02
+[2026-02-02 17:58:08] [INFO] [pipeline] [SCRAPER] Scraped 330 records for 2026-02-02
+[2026-02-02 17:58:10] [INFO] [pipeline] [SCRAPER] Fetching historical data for 2025-12-25
+[2026-02-02 17:58:12] [WARNING] [pipeline] [SCRAPER] Requested 2025-12-25 but got 2026-02-02
+[2026-02-02 17:58:12] [INFO] [pipeline] [SCRAPER] Scraped 330 records for 2026-02-02
+[2026-02-02 17:58:14] [INFO] [pipeline] [SCRAPER] Fetching historical data for 2025-12-26
+[2026-02-02 17:58:17] [WARNING] [pipeline] [SCRAPER] Requested 2025-12-26 but got 2026-02-02
+[2026-02-02 17:58:17] [INFO] [pipeline] [SCRAPER] Scraped 330 records for 2026-02-02
+[2026-02-02 17:58:18] [INFO] [pipeline] [SCRAPER] Fetching historical data for 2025-12-29
+[2026-02-02 17:58:24] [WARNING] [pipeline] [SCRAPER] Requested 2025-12-29 but got 2026-02-02
+[2026-02-02 17:58:24] [INFO] [pipeline] [SCRAPER] Scraped 330 records for 2026-02-02
+[2026-02-02 17:58:25] [INFO] [pipeline] [SCRAPER] Fetching historical data for 2025-12-30
+[2026-02-02 17:58:28] [WARNING] [pipeline] [SCRAPER] Requested 2025-12-30 but got 2026-02-02
+[2026-02-02 17:58:28] [INFO] [pipeline] [SCRAPER] Scraped 330 records for 2026-02-02
+[2026-02-02 17:58:29] [INFO] [pipeline] [SCRAPER] Fetching historical data for 2025-12-31
+[2026-02-02 17:58:32] [WARNING] [pipeline] [SCRAPER] Requested 2025-12-31 but got 2026-02-02
+[2026-02-02 17:58:32] [INFO] [pipeline] [SCRAPER] Scraped 330 records for 2026-02-02
+[2026-02-02 17:58:34] [INFO] [pipeline] [SCRAPER] Fetching historical data for 2026-01-01
+[2026-02-02 17:58:37] [WARNING] [pipeline] [SCRAPER] Requested 2026-01-01 but got 2026-02-02
+[2026-02-02 17:58:37] [INFO] [pipeline] [SCRAPER] Scraped 330 records for 2026-02-02
+[2026-02-02 17:58:38] [INFO] [pipeline] [SCRAPER] Fetching historical data for 2026-01-02
+[2026-02-02 17:58:41] [WARNING] [pipeline] [SCRAPER] Requested 2026-01-02 but got 2026-02-02
+[2026-02-02 17:58:41] [INFO] [pipeline] [SCRAPER] Scraped 330 records for 2026-02-02
+[2026-02-02 17:58:42] [INFO] [pipeline] [SCRAPER] Fetching historical data for 2026-01-05
+[2026-02-02 17:58:45] [WARNING] [pipeline] [SCRAPER] Requested 2026-01-05 but got 2026-02-02
+[2026-02-02 17:58:45] [INFO] [pipeline] [SCRAPER] Scraped 330 records for 2026-02-02
+[2026-02-02 17:58:47] [INFO] [pipeline] [SCRAPER] Fetching historical data for 2026-01-06
+[2026-02-02 17:58:49] [WARNING] [pipeline] [SCRAPER] Requested 2026-01-06 but got 2026-02-02
+[2026-02-02 17:58:49] [INFO] [pipeline] [SCRAPER] Scraped 330 records for 2026-02-02
+[2026-02-02 17:58:51] [INFO] [pipeline] [SCRAPER] Fetching historical data for 2026-01-07
+[2026-02-02 17:58:54] [WARNING] [pipeline] [SCRAPER] Requested 2026-01-07 but got 2026-02-02
+[2026-02-02 17:58:54] [INFO] [pipeline] [SCRAPER] Scraped 330 records for 2026-02-02
+[2026-02-02 17:58:55] [INFO] [pipeline] [SCRAPER] Fetching historical data for 2026-01-08
+[2026-02-02 17:58:58] [WARNING] [pipeline] [SCRAPER] Requested 2026-01-08 but got 2026-02-02
+[2026-02-02 17:58:58] [INFO] [pipeline] [SCRAPER] Scraped 330 records for 2026-02-02
+[2026-02-02 17:59:00] [INFO] [pipeline] [SCRAPER] Fetching historical data for 2026-01-09
+[2026-02-02 17:59:02] [WARNING] [pipeline] [SCRAPER] Requested 2026-01-09 but got 2026-02-02
+[2026-02-02 17:59:03] [INFO] [pipeline] [SCRAPER] Scraped 330 records for 2026-02-02
+[2026-02-02 17:59:04] [INFO] [pipeline] [SCRAPER] Fetching historical data for 2026-01-12
+[2026-02-02 17:59:07] [WARNING] [pipeline] [SCRAPER] Requested 2026-01-12 but got 2026-02-02
+[2026-02-02 17:59:07] [INFO] [pipeline] [SCRAPER] Scraped 330 records for 2026-02-02
+[2026-02-02 17:59:08] [INFO] [pipeline] [SCRAPER] Fetching historical data for 2026-01-13
+[2026-02-02 17:59:11] [WARNING] [pipeline] [SCRAPER] Requested 2026-01-13 but got 2026-02-02
+[2026-02-02 17:59:11] [INFO] [pipeline] [SCRAPER] Scraped 330 records for 2026-02-02
+[2026-02-02 17:59:13] [INFO] [pipeline] [SCRAPER] Fetching historical data for 2026-01-14
+[2026-02-02 17:59:15] [WARNING] [pipeline] [SCRAPER] Requested 2026-01-14 but got 2026-02-02
+[2026-02-02 17:59:15] [INFO] [pipeline] [SCRAPER] Scraped 330 records for 2026-02-02
+[2026-02-02 17:59:16] [INFO] [pipeline] [SCRAPER] Fetching historical data for 2026-01-15
+[2026-02-02 17:59:21] [WARNING] [pipeline] [SCRAPER] Requested 2026-01-15 but got 2026-02-02
+[2026-02-02 17:59:21] [INFO] [pipeline] [SCRAPER] Scraped 330 records for 2026-02-02
+[2026-02-02 17:59:22] [INFO] [pipeline] [SCRAPER] Fetching historical data for 2026-01-16
+[2026-02-02 17:59:25] [WARNING] [pipeline] [SCRAPER] Requested 2026-01-16 but got 2026-02-02
+[2026-02-02 17:59:25] [INFO] [pipeline] [SCRAPER] Scraped 330 records for 2026-02-02
+[2026-02-02 17:59:26] [INFO] [pipeline] [SCRAPER] Fetching historical data for 2026-01-19
+[2026-02-02 17:59:29] [WARNING] [pipeline] [SCRAPER] Requested 2026-01-19 but got 2026-02-02
+[2026-02-02 17:59:29] [INFO] [pipeline] [SCRAPER] Scraped 330 records for 2026-02-02
+[2026-02-02 17:59:30] [INFO] [pipeline] [SCRAPER] Fetching historical data for 2026-01-20
+[2026-02-02 17:59:34] [WARNING] [pipeline] [SCRAPER] Requested 2026-01-20 but got 2026-02-02
+[2026-02-02 17:59:35] [INFO] [pipeline] [SCRAPER] Scraped 330 records for 2026-02-02
+[2026-02-02 17:59:36] [INFO] [pipeline] [SCRAPER] Fetching historical data for 2026-01-21
+[2026-02-02 17:59:38] [WARNING] [pipeline] [SCRAPER] Requested 2026-01-21 but got 2026-02-02
+[2026-02-02 17:59:38] [INFO] [pipeline] [SCRAPER] Scraped 330 records for 2026-02-02
+[2026-02-02 17:59:40] [INFO] [pipeline] [SCRAPER] Fetching historical data for 2026-01-22
+[2026-02-02 17:59:42] [WARNING] [pipeline] [SCRAPER] Requested 2026-01-22 but got 2026-02-02
+[2026-02-02 17:59:42] [INFO] [pipeline] [SCRAPER] Scraped 330 records for 2026-02-02
+[2026-02-02 17:59:44] [INFO] [pipeline] [SCRAPER] Fetching historical data for 2026-01-23
+[2026-02-02 17:59:47] [WARNING] [pipeline] [SCRAPER] Requested 2026-01-23 but got 2026-02-02
+[2026-02-02 17:59:47] [INFO] [pipeline] [SCRAPER] Scraped 330 records for 2026-02-02
+[2026-02-02 17:59:48] [INFO] [pipeline] [SCRAPER] Fetching historical data for 2026-01-26
+[2026-02-02 17:59:51] [WARNING] [pipeline] [SCRAPER] Requested 2026-01-26 but got 2026-02-02
+[2026-02-02 17:59:51] [INFO] [pipeline] [SCRAPER] Scraped 330 records for 2026-02-02
+[2026-02-02 17:59:53] [INFO] [pipeline] [SCRAPER] Fetching historical data for 2026-01-27
+[2026-02-02 17:59:55] [WARNING] [pipeline] [SCRAPER] Requested 2026-01-27 but got 2026-02-02
+[2026-02-02 17:59:55] [INFO] [pipeline] [SCRAPER] Scraped 330 records for 2026-02-02
+[2026-02-02 17:59:56] [INFO] [pipeline] [SCRAPER] Fetching historical data for 2026-01-28
+[2026-02-02 17:59:59] [WARNING] [pipeline] [SCRAPER] Requested 2026-01-28 but got 2026-02-02
+[2026-02-02 17:59:59] [INFO] [pipeline] [SCRAPER] Scraped 330 records for 2026-02-02
+[2026-02-02 18:00:01] [INFO] [pipeline] [SCRAPER] Fetching historical data for 2026-01-29
+[2026-02-02 18:00:04] [WARNING] [pipeline] [SCRAPER] Requested 2026-01-29 but got 2026-02-02
+[2026-02-02 18:00:04] [INFO] [pipeline] [SCRAPER] Scraped 330 records for 2026-02-02
+[2026-02-02 18:00:05] [INFO] [pipeline] [SCRAPER] Fetching historical data for 2026-01-30
+[2026-02-02 18:00:09] [WARNING] [pipeline] [SCRAPER] Requested 2026-01-30 but got 2026-02-02
+[2026-02-02 18:00:09] [INFO] [pipeline] [SCRAPER] Scraped 330 records for 2026-02-02
+[2026-02-02 18:00:10] [INFO] [pipeline] [SCRAPER] Fetching historical data for 2026-02-02
+[2026-02-02 18:00:13] [INFO] [pipeline] [SCRAPER] Scraped 330 records for 2026-02-02
+[2026-02-02 18:06:52] [INFO] [pipeline] [SERVICES] Loading NABIL from database (3177 records)
+[2026-02-02 18:06:53] [INFO] [pipeline] [SERVICES] Loading NEPSE from database (6414 records)
+[2026-02-02 18:07:18] [INFO] [pipeline] [SERVICES] Updated model metadata for NABIL: acc=43.63%
+[2026-02-02 18:07:20] [INFO] [pipeline] [SERVICES] Saved 30 forecasts for NABIL to database
+[2026-02-02 18:14:48] [INFO] [pipeline] [SERVICES] Loading NABIL from database (3177 records)
+[2026-02-02 18:14:49] [INFO] [pipeline] [SERVICES] Loading NEPSE from database (6414 records)
+[2026-02-02 18:15:19] [INFO] [pipeline] [SERVICES] Updated model metadata for NABIL: acc=39.56%
+[2026-02-02 18:15:21] [INFO] [pipeline] [SERVICES] Saved 30 forecasts for NABIL to database
+[2026-02-02 18:20:01] [INFO] [pipeline] [SCRAPER] Fetching historical data for 2026-01-15
+[2026-02-02 18:20:06] [WARNING] [pipeline] [SCRAPER] Requested 2026-01-15 but got 2026-02-02
+[2026-02-02 18:20:06] [INFO] [pipeline] [SCRAPER] Scraped 330 records for 2026-02-02
+[2026-02-02 18:20:33] [INFO] [pipeline] [SCRAPER] Fetching historical data for 2025-12-12
+[2026-02-02 18:20:39] [WARNING] [pipeline] [SCRAPER] Requested 2025-12-12 but got 2026-02-02
+[2026-02-02 18:20:39] [INFO] [pipeline] [SCRAPER] Scraped 330 records for 2026-02-02
+[2026-02-02 18:21:08] [INFO] [pipeline] [SCRAPER] DB Update: 0 created, 330 already existed
+[2026-02-02 18:21:09] [INFO] [pipeline] [SCRAPER] Fetching historical data for 2025-12-15
+[2026-02-02 18:21:12] [WARNING] [pipeline] [SCRAPER] Requested 2025-12-15 but got 2026-02-02
+[2026-02-02 18:21:12] [INFO] [pipeline] [SCRAPER] Scraped 330 records for 2026-02-02
+[2026-02-02 18:21:41] [INFO] [pipeline] [SCRAPER] DB Update: 0 created, 330 already existed
+[2026-02-02 18:21:42] [INFO] [pipeline] [SCRAPER] Fetching historical data for 2025-12-16
+[2026-02-02 18:21:45] [WARNING] [pipeline] [SCRAPER] Requested 2025-12-16 but got 2026-02-02
+[2026-02-02 18:21:45] [INFO] [pipeline] [SCRAPER] Scraped 330 records for 2026-02-02
+[2026-02-02 18:22:14] [INFO] [pipeline] [SCRAPER] DB Update: 0 created, 330 already existed
+[2026-02-02 18:22:15] [INFO] [pipeline] [SCRAPER] Fetching historical data for 2025-12-17
+[2026-02-02 18:22:17] [WARNING] [pipeline] [SCRAPER] Requested 2025-12-17 but got 2026-02-02
+[2026-02-02 18:22:17] [INFO] [pipeline] [SCRAPER] Scraped 330 records for 2026-02-02
+[2026-02-02 18:22:46] [INFO] [pipeline] [SCRAPER] DB Update: 0 created, 330 already existed
+[2026-02-02 18:22:48] [INFO] [pipeline] [SCRAPER] Fetching historical data for 2025-12-18
+[2026-02-02 18:22:50] [WARNING] [pipeline] [SCRAPER] Requested 2025-12-18 but got 2026-02-02
+[2026-02-02 18:22:50] [INFO] [pipeline] [SCRAPER] Scraped 330 records for 2026-02-02
+[2026-02-02 18:23:19] [INFO] [pipeline] [SCRAPER] Fetching historical data for 2025-12-19
+[2026-02-02 18:23:21] [WARNING] [pipeline] [SCRAPER] Requested 2025-12-19 but got 2026-02-02
+[2026-02-02 18:23:21] [INFO] [pipeline] [SCRAPER] Scraped 330 records for 2026-02-02
+[2026-02-02 18:23:23] [INFO] [pipeline] [SCRAPER] Fetching historical data for 2025-12-22
+[2026-02-02 18:23:25] [WARNING] [pipeline] [SCRAPER] Requested 2025-12-22 but got 2026-02-02
+[2026-02-02 18:23:25] [INFO] [pipeline] [SCRAPER] Scraped 330 records for 2026-02-02
+[2026-02-02 18:23:27] [INFO] [pipeline] [SCRAPER] Fetching historical data for 2025-12-23
+[2026-02-02 18:23:29] [WARNING] [pipeline] [SCRAPER] Requested 2025-12-23 but got 2026-02-02
+[2026-02-02 18:23:29] [INFO] [pipeline] [SCRAPER] Scraped 330 records for 2026-02-02
+[2026-02-02 18:23:30] [INFO] [pipeline] [SCRAPER] Fetching historical data for 2025-12-24
+[2026-02-02 18:23:33] [WARNING] [pipeline] [SCRAPER] Requested 2025-12-24 but got 2026-02-02
+[2026-02-02 18:23:33] [INFO] [pipeline] [SCRAPER] Scraped 330 records for 2026-02-02
+[2026-02-02 18:23:34] [INFO] [pipeline] [SCRAPER] Fetching historical data for 2025-12-25
+[2026-02-02 18:23:36] [WARNING] [pipeline] [SCRAPER] Requested 2025-12-25 but got 2026-02-02
+[2026-02-02 18:23:36] [INFO] [pipeline] [SCRAPER] Scraped 330 records for 2026-02-02
+[2026-02-02 18:23:37] [INFO] [pipeline] [SCRAPER] Fetching historical data for 2025-12-26
+[2026-02-02 18:23:39] [WARNING] [pipeline] [SCRAPER] Requested 2025-12-26 but got 2026-02-02
+[2026-02-02 18:23:39] [INFO] [pipeline] [SCRAPER] Scraped 330 records for 2026-02-02
+[2026-02-02 18:23:41] [INFO] [pipeline] [SCRAPER] Fetching historical data for 2025-12-29
+[2026-02-02 18:23:43] [WARNING] [pipeline] [SCRAPER] Requested 2025-12-29 but got 2026-02-02
+[2026-02-02 18:23:43] [INFO] [pipeline] [SCRAPER] Scraped 330 records for 2026-02-02
+[2026-02-02 18:23:44] [INFO] [pipeline] [SCRAPER] Fetching historical data for 2025-12-30
+[2026-02-02 18:23:46] [WARNING] [pipeline] [SCRAPER] Requested 2025-12-30 but got 2026-02-02
+[2026-02-02 18:23:46] [INFO] [pipeline] [SCRAPER] Scraped 330 records for 2026-02-02
+[2026-02-02 18:23:47] [INFO] [pipeline] [SCRAPER] Fetching historical data for 2025-12-31
+[2026-02-02 18:23:51] [WARNING] [pipeline] [SCRAPER] Requested 2025-12-31 but got 2026-02-02
+[2026-02-02 18:23:51] [INFO] [pipeline] [SCRAPER] Scraped 330 records for 2026-02-02
+[2026-02-02 18:23:53] [INFO] [pipeline] [SCRAPER] Fetching historical data for 2026-01-01
+[2026-02-02 18:23:55] [WARNING] [pipeline] [SCRAPER] Requested 2026-01-01 but got 2026-02-02
+[2026-02-02 18:23:55] [INFO] [pipeline] [SCRAPER] Scraped 330 records for 2026-02-02
+[2026-02-02 18:23:56] [INFO] [pipeline] [SCRAPER] Fetching historical data for 2026-01-02
+[2026-02-02 18:24:01] [WARNING] [pipeline] [SCRAPER] Requested 2026-01-02 but got 2026-02-02
+[2026-02-02 18:24:01] [INFO] [pipeline] [SCRAPER] Scraped 330 records for 2026-02-02
+[2026-02-02 18:24:02] [INFO] [pipeline] [SCRAPER] Fetching historical data for 2026-01-05
+[2026-02-02 18:24:04] [WARNING] [pipeline] [SCRAPER] Requested 2026-01-05 but got 2026-02-02
+[2026-02-02 18:24:04] [INFO] [pipeline] [SCRAPER] Scraped 330 records for 2026-02-02
+[2026-02-02 18:24:06] [INFO] [pipeline] [SCRAPER] Fetching historical data for 2026-01-06
+[2026-02-02 18:24:08] [WARNING] [pipeline] [SCRAPER] Requested 2026-01-06 but got 2026-02-02
+[2026-02-02 18:24:08] [INFO] [pipeline] [SCRAPER] Scraped 330 records for 2026-02-02
+[2026-02-02 18:24:09] [INFO] [pipeline] [SCRAPER] Fetching historical data for 2026-01-07
+[2026-02-02 18:24:11] [WARNING] [pipeline] [SCRAPER] Requested 2026-01-07 but got 2026-02-02
+[2026-02-02 18:24:11] [INFO] [pipeline] [SCRAPER] Scraped 330 records for 2026-02-02
+[2026-02-02 18:24:13] [INFO] [pipeline] [SCRAPER] Fetching historical data for 2026-01-08
+[2026-02-02 18:24:15] [WARNING] [pipeline] [SCRAPER] Requested 2026-01-08 but got 2026-02-02
+[2026-02-02 18:24:15] [INFO] [pipeline] [SCRAPER] Scraped 330 records for 2026-02-02
+[2026-02-02 18:24:16] [INFO] [pipeline] [SCRAPER] Fetching historical data for 2026-01-09
+[2026-02-02 18:24:18] [WARNING] [pipeline] [SCRAPER] Requested 2026-01-09 but got 2026-02-02
+[2026-02-02 18:24:18] [INFO] [pipeline] [SCRAPER] Scraped 330 records for 2026-02-02
+[2026-02-02 18:24:20] [INFO] [pipeline] [SCRAPER] Fetching historical data for 2026-01-12
+[2026-02-02 18:24:22] [WARNING] [pipeline] [SCRAPER] Requested 2026-01-12 but got 2026-02-02
+[2026-02-02 18:24:22] [INFO] [pipeline] [SCRAPER] Scraped 330 records for 2026-02-02
+[2026-02-02 18:24:23] [INFO] [pipeline] [SCRAPER] Fetching historical data for 2026-01-13
+[2026-02-02 18:24:26] [WARNING] [pipeline] [SCRAPER] Requested 2026-01-13 but got 2026-02-02
+[2026-02-02 18:24:26] [INFO] [pipeline] [SCRAPER] Scraped 330 records for 2026-02-02
+[2026-02-02 18:24:28] [INFO] [pipeline] [SCRAPER] Fetching historical data for 2026-01-14
+[2026-02-02 18:24:29] [WARNING] [pipeline] [SCRAPER] Requested 2026-01-14 but got 2026-02-02
+[2026-02-02 18:24:29] [INFO] [pipeline] [SCRAPER] Scraped 330 records for 2026-02-02
+[2026-02-02 18:24:31] [INFO] [pipeline] [SCRAPER] Fetching historical data for 2026-01-15
+[2026-02-02 18:24:34] [WARNING] [pipeline] [SCRAPER] Requested 2026-01-15 but got 2026-02-02
+[2026-02-02 18:24:34] [INFO] [pipeline] [SCRAPER] Scraped 330 records for 2026-02-02
+[2026-02-02 18:24:35] [INFO] [pipeline] [SCRAPER] Fetching historical data for 2026-01-16
+[2026-02-02 18:24:37] [WARNING] [pipeline] [SCRAPER] Requested 2026-01-16 but got 2026-02-02
+[2026-02-02 18:24:37] [INFO] [pipeline] [SCRAPER] Scraped 330 records for 2026-02-02
+[2026-02-02 18:24:39] [INFO] [pipeline] [SCRAPER] Fetching historical data for 2026-01-19
+[2026-02-02 18:24:41] [WARNING] [pipeline] [SCRAPER] Requested 2026-01-19 but got 2026-02-02
+[2026-02-02 18:24:41] [INFO] [pipeline] [SCRAPER] Scraped 330 records for 2026-02-02
+[2026-02-02 18:24:42] [INFO] [pipeline] [SCRAPER] Fetching historical data for 2026-01-20
+[2026-02-02 18:24:44] [WARNING] [pipeline] [SCRAPER] Requested 2026-01-20 but got 2026-02-02
+[2026-02-02 18:24:44] [INFO] [pipeline] [SCRAPER] Scraped 330 records for 2026-02-02
+[2026-02-02 18:24:46] [INFO] [pipeline] [SCRAPER] Fetching historical data for 2026-01-21
+[2026-02-02 18:24:48] [WARNING] [pipeline] [SCRAPER] Requested 2026-01-21 but got 2026-02-02
+[2026-02-02 18:24:48] [INFO] [pipeline] [SCRAPER] Scraped 330 records for 2026-02-02
+[2026-02-02 18:24:49] [INFO] [pipeline] [SCRAPER] Fetching historical data for 2026-01-22
+[2026-02-02 18:24:51] [WARNING] [pipeline] [SCRAPER] Requested 2026-01-22 but got 2026-02-02
+[2026-02-02 18:24:51] [INFO] [pipeline] [SCRAPER] Scraped 330 records for 2026-02-02
+[2026-02-02 18:24:52] [INFO] [pipeline] [SCRAPER] Fetching historical data for 2026-01-23
+[2026-02-02 18:24:54] [WARNING] [pipeline] [SCRAPER] Requested 2026-01-23 but got 2026-02-02
+[2026-02-02 18:24:54] [INFO] [pipeline] [SCRAPER] Scraped 330 records for 2026-02-02
+[2026-02-02 18:24:55] [INFO] [pipeline] [SCRAPER] Fetching historical data for 2026-01-26
+[2026-02-02 18:24:59] [WARNING] [pipeline] [SCRAPER] Requested 2026-01-26 but got 2026-02-02
+[2026-02-02 18:24:59] [INFO] [pipeline] [SCRAPER] Scraped 330 records for 2026-02-02
+[2026-02-02 18:25:01] [INFO] [pipeline] [SCRAPER] Fetching historical data for 2026-01-27
+[2026-02-02 18:25:02] [WARNING] [pipeline] [SCRAPER] Requested 2026-01-27 but got 2026-02-02
+[2026-02-02 18:25:02] [INFO] [pipeline] [SCRAPER] Scraped 330 records for 2026-02-02
+[2026-02-02 18:25:04] [INFO] [pipeline] [SCRAPER] Fetching historical data for 2026-01-28
+[2026-02-02 18:25:05] [WARNING] [pipeline] [SCRAPER] Requested 2026-01-28 but got 2026-02-02
+[2026-02-02 18:25:05] [INFO] [pipeline] [SCRAPER] Scraped 330 records for 2026-02-02
+[2026-02-02 18:25:07] [INFO] [pipeline] [SCRAPER] Fetching historical data for 2026-01-29
+[2026-02-02 18:25:09] [WARNING] [pipeline] [SCRAPER] Requested 2026-01-29 but got 2026-02-02
+[2026-02-02 18:25:09] [INFO] [pipeline] [SCRAPER] Scraped 330 records for 2026-02-02
+[2026-02-02 18:25:10] [INFO] [pipeline] [SCRAPER] Fetching historical data for 2026-01-30
+[2026-02-02 18:25:12] [WARNING] [pipeline] [SCRAPER] Requested 2026-01-30 but got 2026-02-02
+[2026-02-02 18:25:12] [INFO] [pipeline] [SCRAPER] Scraped 330 records for 2026-02-02
+[2026-02-02 18:25:14] [INFO] [pipeline] [SCRAPER] Fetching historical data for 2026-02-02
+[2026-02-02 18:25:19] [INFO] [pipeline] [SCRAPER] Scraped 330 records for 2026-02-02
+[2026-02-02 19:10:48] [INFO] [pipeline] [SERVICES] Loading NABIL from database (3177 records)
+[2026-02-02 19:10:50] [INFO] [pipeline] [SERVICES] Loading NEPSE from database (6467 records)
+[2026-02-02 19:11:19] [INFO] [pipeline] [SERVICES] Updated model metadata for NABIL: acc=46.52%
+[2026-02-02 19:11:21] [INFO] [pipeline] [SERVICES] Saved 30 forecasts for NABIL to database

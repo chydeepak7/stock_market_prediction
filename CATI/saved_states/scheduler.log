@@ -1,0 +1,27 @@
+[Mon 02/02/2026 14:35:46.97] Starting scheduled scrape... 
+2026-02-02 14:35:51.522783: I tensorflow/core/util/port.cc:153] oneDNN custom operations are on. You may see slightly different numerical results due to floating-point round-off errors from different computation orders. To turn them off, set the environment variable `TF_ENABLE_ONEDNN_OPTS=0`.
+2026-02-02 14:35:55.827639: I tensorflow/core/util/port.cc:153] oneDNN custom operations are on. You may see slightly different numerical results due to floating-point round-off errors from different computation orders. To turn them off, set the environment variable `TF_ENABLE_ONEDNN_OPTS=0`.
+D:\Home\BE\projects\stock_market_prediction\myvenv\Lib\site-packages\keras\src\export\tf2onnx_lib.py:8: FutureWarning: In the future `np.object` will be defined as the corresponding NumPy scalar.
+  if not hasattr(np, "object"):
+[INFO] [CMD] scrape_daily command started
+[INFO] ==================================================
+[INFO] [SCRAPER] Starting scrape job with gap-fill
+[INFO] [SCRAPER] Fetching data from https://www.sharesansar.com/today-share-price
+[INFO] [SCRAPER] Data date extracted from page: 2026-02-01
+[INFO] [SCRAPER] Scraped 329 records for 2026-02-01
+[INFO] [SCRAPER] DB Update: 0 created, 329 already existed
+[INFO] [SCRAPER] Today's data: 0 new, 329 existing
+[INFO] [SCRAPER] Last recorded date in DB: 2026-02-01
+[INFO] [SCRAPER] Filling gap for 2026-02-02
+[INFO] [SCRAPER] Fetching historical data for 2026-02-02
+[WARNING] [SCRAPER] Requested 2026-02-02 but got 2026-02-01
+[INFO] [SCRAPER] Scraped 329 records for 2026-02-01
+[INFO] [SCRAPER] DB Update: 0 created, 329 already existed
+[INFO] [SCRAPER] Gap-fill complete: 1 gaps processed
+[INFO] [SCRAPER] Total: 0 new records, 658 duplicates
+[INFO] [CMD] scrape_daily command completed
+Starting daily scrape...
+Gap-fill mode enabled. Will scrape missing dates...
+Scrape completed: 0 new records, 658 duplicates, 1 gaps filled
+[Mon 02/02/2026 14:36:09.43] Scrape completed. 
+ 
