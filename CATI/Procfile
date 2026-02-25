@@ -10,7 +10,7 @@
 # =======================================
 
 # Scraper process (runs via Railway Cron Job)
-scraper: python scripts/update_market_data.py
+scraper: python CATI/scripts/update_market_data.py
 
 # Web server (uncomment if deploying the full web app)
 # web: gunicorn CATI.wsgi --bind 0.0.0.0:$PORT
