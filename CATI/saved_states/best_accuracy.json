@@ -1,14 +1,22 @@
 {
     "NABIL": {
-        "best_accuracy": 61.5551,
-        "best_balanced": 54.0239
+        "best_accuracy": 62.419,
+        "best_balanced": 54.5079
     },
-    "NTC": {
-        "best_accuracy": 45.671,
-        "best_balanced": 51.7483
+    "NRIC": {
+        "best_accuracy": 58.4,
+        "best_balanced": 54.8701
+    },
+    "CIT": {
+        "best_accuracy": 55.6627,
+        "best_balanced": 47.593
     },
     "GBIME": {
-        "best_accuracy": 54.8128,
-        "best_balanced": 55.837
+        "best_accuracy": 0.0,
+        "best_balanced": 0.0
+    },
+    "NTC": {
+        "best_accuracy": 0.0,
+        "best_balanced": 0.0
     }
 }
